@@ -1,26 +1,368 @@
 @import "tailwindcss";
+@plugin "tailwindcss-animate";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+@custom-variant dark (&:is(.dark *));
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --radius-3xl: calc(var(--radius) + 12px);
+  --radius-4xl: calc(var(--radius) + 16px);
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+  --font-cinzel: var(--font-cinzel), serif;
+  --font-crimson: var(--font-crimson), Georgia, serif;
+
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+  --color-destructive: hsl(var(--destructive));
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+  --color-chart-1: hsl(var(--chart-1));
+  --color-chart-2: hsl(var(--chart-2));
+  --color-chart-3: hsl(var(--chart-3));
+  --color-chart-4: hsl(var(--chart-4));
+  --color-chart-5: hsl(var(--chart-5));
+  --color-sidebar: hsl(var(--sidebar));
+  --color-sidebar-foreground: hsl(var(--sidebar-foreground));
+  --color-sidebar-primary: hsl(var(--sidebar-primary));
+  --color-sidebar-primary-foreground: hsl(var(--sidebar-primary-foreground));
+  --color-sidebar-accent: hsl(var(--sidebar-accent));
+  --color-sidebar-accent-foreground: hsl(var(--sidebar-accent-foreground));
+  --color-sidebar-border: hsl(var(--sidebar-border));
+  --color-sidebar-ring: hsl(var(--sidebar-ring));
+
+  /* Custom tokens mapping */
+  --color-gold-glow: hsl(var(--gold-glow));
+  --color-rune-glow: hsl(var(--rune-glow));
+  --color-parchment: hsl(var(--parchment));
+  --color-ink: hsl(var(--ink));
+  --color-burnt-edge: hsl(var(--burnt-edge));
+  --color-leather: hsl(var(--leather));
+  --color-worn-metal: hsl(var(--worn-metal));
+
+  /* Animations */
+  --animate-shimmer: shimmer 3s ease-in-out infinite;
+  --animate-slow-pulse: slow-pulse 4s ease-in-out infinite;
+  --animate-fate-glow: fate-glow 2s ease-in-out infinite alternate;
+
+  @keyframes shimmer {
+
+    0%,
+    100% {
+      background-position: 200% center;
+    }
+
+    50% {
+      background-position: -200% center;
+    }
+  }
+
+  @keyframes slow-pulse {
+
+    0%,
+    100% {
+      opacity: 1;
+    }
+
+    50% {
+      opacity: 0.7;
+    }
+  }
+
+  @keyframes fate-glow {
+    from {
+      box-shadow:
+        0 0 10px hsl(var(--rune-glow) / 0.4),
+        0 0 20px hsl(var(--rune-glow) / 0.2),
+        inset 0 0 10px hsl(var(--rune-glow) / 0.1);
+    }
+
+    to {
+      box-shadow:
+        0 0 20px hsl(var(--rune-glow) / 0.6),
+        0 0 40px hsl(var(--rune-glow) / 0.4),
+        inset 0 0 20px hsl(var(--rune-glow) / 0.2);
+    }
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* Medieval Fantasy RPG Design System */
+
+@layer base {
+  :root {
+    /* Dark parchment and aged scroll colors */
+    --background: 30 15% 8%;
+    --foreground: 0 0% 100%;
+
+    /* Card surfaces - aged wood/leather look */
+    --card: 25 20% 12%;
+    --card-foreground: 35 30% 85%;
+
+    --popover: 25 20% 10%;
+    --popover-foreground: 35 30% 85%;
+
+    /* Aged gold - muted, tarnished */
+    --primary: 38 55% 42%;
+    --primary-foreground: 30 15% 8%;
+
+    /* Dark brown leather */
+    --secondary: 25 25% 16%;
+    --secondary-foreground: 35 25% 80%;
+
+    /* Burnt sienna / deep umber */
+    --muted: 20 20% 14%;
+    --muted-foreground: 30 15% 55%;
+
+    /* Deep umber accent */
+    --accent: 15 35% 25%;
+    --accent-foreground: 35 30% 85%;
+
+    /* Destructive - blood red but muted */
+    --destructive: 0 50% 35%;
+    --destructive-foreground: 35 30% 90%;
+
+    /* Borders - aged leather edge */
+    --border: 25 30% 22%;
+    --input: 25 25% 18%;
+    --ring: 38 50% 40%;
+
+    --radius: 0.25rem;
+
+    /* Custom medieval tokens */
+    --gold-glow: 38 60% 50%;
+    --rune-glow: 38 70% 45%;
+    --parchment: 35 35% 75%;
+    --ink: 30 20% 15%;
+    --burnt-edge: 15 40% 12%;
+    --leather: 25 30% 18%;
+    --worn-metal: 30 10% 35%;
+
+    /* Sidebar for potential navigation */
+    --sidebar-background: 25 20% 10%;
+    --sidebar-foreground: 35 25% 75%;
+    --sidebar-primary: 38 55% 42%;
+    --sidebar-primary-foreground: 30 15% 8%;
+    --sidebar-accent: 20 20% 16%;
+    --sidebar-accent-foreground: 35 25% 80%;
+    --sidebar-border: 25 30% 20%;
+    --sidebar-ring: 38 50% 40%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased animate-slow-pulse;
+    color: #ffffff;
+    font-family: var(--font-crimson), Georgia, serif;
+    background-image: linear-gradient(to bottom,
+        hsl(var(--background)) 0%,
+        hsl(25 18% 10%) 50%,
+        hsl(var(--background)) 100%);
+    min-height: 100vh;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply font-semibold tracking-wide text-parchment;
+    font-family: var(--font-cinzel), serif;
+    letter-spacing: 0.05em;
+  }
+}
+
+@layer components {
+
+  /* Medieval decorative divider */
+  .divider-ornament {
+    @apply relative flex items-center justify-center py-4;
+  }
+
+  .divider-ornament::before,
+  .divider-ornament::after {
+    content: '';
+    @apply flex-1 h-px;
+    background: linear-gradient(90deg,
+        transparent,
+        hsl(var(--primary) / 0.5),
+        transparent);
+  }
+
+  .divider-ornament::before {
+    @apply mr-4;
+  }
+
+  .divider-ornament::after {
+    @apply ml-4;
+  }
+
+  /* Gold shimmer effect */
+  .gold-shimmer {
+    @apply animate-shimmer;
+    background: linear-gradient(110deg,
+        hsl(var(--primary)) 0%,
+        hsl(var(--gold-glow)) 45%,
+        hsl(var(--primary)) 55%,
+        hsl(var(--gold-glow)) 100%);
+    background-size: 200% 100%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Rune glow effect for buttons and cards */
+  .rune-glow {
+    box-shadow:
+      0 0 10px hsl(var(--rune-glow) / 0.2),
+      0 0 20px hsl(var(--rune-glow) / 0.1),
+      inset 0 0 10px hsl(var(--rune-glow) / 0.05);
+  }
+
+  .rune-glow-active {
+    box-shadow:
+      0 0 15px hsl(var(--rune-glow) / 0.4),
+      0 0 30px hsl(var(--rune-glow) / 0.2),
+      0 0 45px hsl(var(--rune-glow) / 0.1),
+      inset 0 0 15px hsl(var(--rune-glow) / 0.1);
+  }
+
+  /* Card with aged border frame */
+  .aged-frame {
+    @apply relative;
+    border: 2px solid hsl(var(--primary) / 0.4);
+    box-shadow:
+      inset 0 0 20px hsl(var(--burnt-edge) / 0.5),
+      0 4px 20px hsl(var(--background) / 0.8);
+  }
+
+  .aged-frame::before {
+    content: '';
+    @apply absolute inset-0 pointer-events-none;
+    border: 1px solid hsl(var(--primary) / 0.2);
+    margin: 4px;
+  }
+
+  /* Parchment texture overlay */
+  .parchment-texture {
+    @apply relative;
+  }
+
+  .parchment-texture::after {
+    content: '';
+    @apply absolute inset-0 pointer-events-none opacity-10;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  }
+
+  /* Medieval scroll appearance */
+  .scroll-card {
+    @apply relative bg-card rounded;
+    background: linear-gradient(135deg,
+        hsl(var(--card)) 0%,
+        hsl(25 22% 14%) 50%,
+        hsl(var(--card)) 100%);
+    border: 1px solid hsl(var(--primary) / 0.3);
+  }
+
+  /* Worn metal button style */
+  .btn-medieval {
+    @apply relative overflow-hidden;
+    font-family: var(--font-cinzel), serif;
+    background: linear-gradient(180deg,
+        hsl(var(--worn-metal)) 0%,
+        hsl(25 15% 25%) 50%,
+        hsl(var(--worn-metal)) 100%);
+    border: 2px solid hsl(var(--primary) / 0.5);
+    text-shadow: 0 1px 2px hsl(var(--background));
+  }
+
+  .btn-medieval:hover {
+    border-color: hsl(var(--primary) / 0.8);
+  }
+
+  /* Fate card styling */
+  .fate-card {
+    @apply relative;
+    background: linear-gradient(145deg,
+        hsl(25 25% 15%) 0%,
+        hsl(var(--card)) 30%,
+        hsl(25 20% 13%) 100%);
+    border: 3px solid hsl(var(--primary) / 0.4);
+    box-shadow:
+      inset 0 0 30px hsl(var(--burnt-edge) / 0.4),
+      0 10px 40px hsl(var(--background) / 0.9);
+  }
+
+  .fate-card-selected {
+    @apply animate-fate-glow;
+    border-color: hsl(var(--primary) / 0.9);
+    /* box-shadow is handled by the animation now */
+  }
+
+  /* Bounty text styling */
+  .bounty-text {
+    @apply text-primary font-cinzel;
+    text-shadow: 0 0 10px hsl(var(--rune-glow) / 0.3);
+    font-family: var(--font-cinzel), serif;
+  }
+}
+
+@layer utilities {
+  .text-shadow-ink {
+    text-shadow: 0 1px 2px hsl(var(--ink));
+  }
+
+  .text-gold {
+    color: hsl(var(--primary));
+  }
+
+  .bg-leather {
+    background-color: hsl(var(--leather));
+  }
+
+  .border-gold {
+    border-color: hsl(var(--primary) / 0.5);
+  }
+
+  /* Card flip animation */
+  .perspective-1000 {
+    perspective: 1000px;
+  }
+
+  .preserve-3d {
+    transform-style: preserve-3d;
+  }
+
+  .backface-hidden {
+    backface-visibility: hidden;
+  }
+
+  .rotate-y-180 {
+    transform: rotateY(180deg);
+  }
 }

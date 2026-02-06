@@ -46,6 +46,45 @@ export default function Home() {
     setActiveBounties(bosses);
   };
 
+  const handleBossHunted = async (bossId: string, huntedBy: string, huntedAt: string) => {
+    try {
+      console.log(`Marking boss ${bossId} as hunted by ${huntedBy}`);
+      
+      // Update via API
+      const response = await fetch('/api/bounties', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          bossId,
+          hunted: true,
+          huntedBy,
+          huntedAt
+        })
+      });
+
+      const result = await response.json();
+      
+      if (result.success) {
+        console.log('Boss marked as hunted successfully');
+        
+        // Update local state
+        setActiveBounties(prev => 
+          prev.map(boss => 
+            boss.id === bossId 
+              ? { ...boss, hunted: true, huntedBy, huntedAt }
+              : boss
+          )
+        );
+      } else {
+        console.error('Failed to mark boss as hunted:', result.error);
+      }
+    } catch (error) {
+      console.error('Error marking boss as hunted:', error);
+    }
+  };
+
 
   return (
     <div className="relative min-h-screen overflow-hidden">
@@ -101,7 +140,12 @@ export default function Home() {
           </div>
 
           {/* Active Bounties Carousel */}
-          {activeBounties.length > 0 && <ActiveBountiesCarousel bosses={activeBounties} />}
+          {activeBounties.length > 0 && (
+            <ActiveBountiesCarousel 
+              bosses={activeBounties} 
+              onBossHunted={handleBossHunted}
+            />
+          )}
         </main>
 
         <Footer />

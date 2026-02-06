@@ -6,4 +6,7 @@ export interface Boss {
     image: string;
     bounty: string;
     description?: string;
+    hunted?: boolean;
+    huntedBy?: string;
+    huntedAt?: string;
 }

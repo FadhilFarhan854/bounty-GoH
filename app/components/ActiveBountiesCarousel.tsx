@@ -1,18 +1,22 @@
 "use client";
-import { motion, AnimatePresence, useMotionValue, useTransform, PanInfo } from "framer-motion";
+import { motion, AnimatePresence, PanInfo } from "framer-motion";
 import { useState, useEffect } from "react";
-import { ChevronLeft, ChevronRight, Target, Swords, Trophy } from "lucide-react";
+import { ChevronLeft, ChevronRight, Target, Swords, Trophy, Sword } from "lucide-react";
 import { Boss } from "../types/boss";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
+import { HuntedDialog } from "./HuntedDialog";
 
 interface ActiveBountiesCarouselProps {
   bosses: Boss[];
+  onBossHunted?: (bossId: string, huntedBy: string, huntedAt: string) => void;
 }
 
-export function ActiveBountiesCarousel({ bosses }: ActiveBountiesCarouselProps) {
+export function ActiveBountiesCarousel({ bosses, onBossHunted }: ActiveBountiesCarouselProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [direction, setDirection] = useState(0);
+  const [showHuntedDialog, setShowHuntedDialog] = useState(false);
+  const [selectedBossForHunt, setSelectedBossForHunt] = useState<Boss | null>(null);
 
   // Auto-slide every 5 seconds
   useEffect(() => {
@@ -52,6 +56,20 @@ export function ActiveBountiesCarousel({ bosses }: ActiveBountiesCarouselProps) 
     }
   };
 
+  const handleMarkAsHunted = (boss: Boss) => {
+    setSelectedBossForHunt(boss);
+    setShowHuntedDialog(true);
+  };
+
+  const handleHuntSuccess = async (hunterName: string) => {
+    if (selectedBossForHunt && onBossHunted) {
+      const huntedAt = new Date().toISOString();
+      await onBossHunted(selectedBossForHunt.id, hunterName, huntedAt);
+      setShowHuntedDialog(false);
+      setSelectedBossForHunt(null);
+    }
+  };
+
   return (
     <motion.div
       className="max-w-6xl mx-auto px-4 py-12"
@@ -59,6 +77,20 @@ export function ActiveBountiesCarousel({ bosses }: ActiveBountiesCarouselProps) 
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.6, delay: 0.3 }}
     >
+      {/* Hunted Dialog */}
+      <AnimatePresence>
+        {showHuntedDialog && selectedBossForHunt && (
+          <HuntedDialog
+            bossName={selectedBossForHunt.name}
+            onSuccess={handleHuntSuccess}
+            onCancel={() => {
+              setShowHuntedDialog(false);
+              setSelectedBossForHunt(null);
+            }}
+          />
+        )}
+      </AnimatePresence>
+
       <div className="fate-card p-8 parchment-texture">
         {/* Header */}
         <div className="text-center mb-8">
@@ -130,6 +162,36 @@ export function ActiveBountiesCarousel({ bosses }: ActiveBountiesCarouselProps) 
                     sizes="(max-width: 768px) 100vw, 50vw"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent opacity-60" />
+                  
+                  {/* Slain Stamp */}
+                  {currentBoss.hunted && (
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0, rotate: 0 }}
+                      animate={{ opacity: 1, scale: 1, rotate: 0 }}
+                      transition={{ duration: 0.5, delay: 0.2 }}
+                      className="absolute inset-0 flex items-center justify-center pointer-events-none"
+                      style={{
+                        background: 'linear-gradient(135deg, rgba(220,38,38,0.3) 0%, rgba(185,28,28,0.5) 50%, rgba(220,38,38,0.3) 100%)',
+                      }}
+                    >
+                      <div className="text-center transform -rotate-15">
+                        <div className="bg-destructive/90 border-4 border-destructive px-8 py-6 shadow-2xl">
+                          <p className="font-cinzel text-4xl md:text-5xl font-bold text-white tracking-wider mb-2">
+                            SLAIN
+                          </p>
+                          <div className="h-px bg-white/50 my-2" />
+                          <p className="font-cinzel text-lg md:text-xl text-white/90">
+                            BY: {currentBoss.huntedBy}
+                          </p>
+                          {currentBoss.huntedAt && (
+                            <p className="text-xs text-white/70 mt-1">
+                              {new Date(currentBoss.huntedAt).toLocaleDateString()}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
                 </motion.div>
 
                 {/* Wanted Banner */}
@@ -182,7 +244,7 @@ export function ActiveBountiesCarousel({ bosses }: ActiveBountiesCarouselProps) 
                 </div>
 
                 {/* Call to Action */}
-                <div className="bg-primary/10 border border-primary/20 rounded p-4 text-center">
+                <div className="bg-primary/10 border border-primary/20 rounded p-4 text-center space-y-3">
                   <Swords className="w-6 h-6 text-primary mx-auto mb-2" />
                   <p className="text-sm text-parchment font-semibold">
                     Rally your party and bring glory to the guild!
@@ -190,6 +252,17 @@ export function ActiveBountiesCarousel({ bosses }: ActiveBountiesCarouselProps) 
                   <p className="text-xs text-muted-foreground mt-1">
                     Report your victory in the guild Discord
                   </p>
+                  
+                  {/* Mark as Hunted Button */}
+                  {!currentBoss.hunted && (
+                    <button
+                      onClick={() => handleMarkAsHunted(currentBoss)}
+                      className="mt-3 w-full bg-red-900/30 hover:bg-red-800/40 border border-red-700/50 text-red-200 px-4 py-2 rounded transition-colors flex items-center justify-center gap-2 group"
+                    >
+                      <Sword className="w-4 h-4 group-hover:scale-110 transition-transform" />
+                      <span className="text-sm font-semibold">Mark as Hunted</span>
+                    </button>
+                  )}
                 </div>
               </div>
             </motion.div>

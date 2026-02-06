@@ -11,7 +11,10 @@
     "name": "Pedrio",
     "image": "/assets/Pedrio.jpeg",
     "bounty": "3,800,000 Spina",
-    "description": "A prodigy of the blade who seeks only the strongest opponents. His technique is flawless."
+    "description": "A prodigy of the blade who seeks only the strongest opponents. His technique is flawless.",
+    "hunted": true,
+    "huntedBy": "Frentzie",
+    "huntedAt": "2026-02-06T09:13:03.010Z"
   },
   {
     "id": "vatudo",

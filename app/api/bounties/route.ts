@@ -20,9 +20,9 @@ const getHeaders = () => {
     'Content-Type': 'application/json',
   };
   if (JSON_KEY) {
-    headers['X-Master-Key'] = JSON_KEY; // For JSONBin.io
-    headers['X-Access-Key'] = JSON_KEY; // Alternative header
-    headers['secret-key'] = JSON_KEY; // For JSONKeeper etc
+    headers['X-Master-Key'] = JSON_KEY;
+    headers['X-Access-Key'] = JSON_KEY;
+    headers['secret-key'] = JSON_KEY;
   }
   return headers;
 };
@@ -68,14 +68,20 @@ export async function POST(request: Request) {
 
     if (JSON_URL) {
       console.log('Saving to external storage...');
+
+      // Auto-detect method: npoint.io uses POST for updates, JSONBin uses PUT
+      const method = JSON_URL.includes('npoint.io') ? 'POST' : 'PUT';
+
       const response = await fetch(JSON_URL, {
-        method: 'PUT', // Most JSON stores use PUT to update
+        method: method,
         headers: getHeaders(),
         body: JSON.stringify(bounties)
       });
 
       if (!response.ok) {
-        throw new Error(`External storage save failed: ${response.statusText}`);
+        const errorText = await response.text();
+        console.error('External storage error details:', errorText);
+        throw new Error(`External storage save failed: ${response.status} ${response.statusText} - ${errorText}`);
       }
 
       return NextResponse.json({ success: true, timestamp: new Date().toISOString() });
@@ -129,11 +135,20 @@ export async function PATCH(request: Request) {
 
     // 3. Save back
     if (JSON_URL) {
-      await fetch(JSON_URL, {
-        method: 'PUT',
+      // Auto-detect method: npoint.io uses POST for updates, JSONBin uses PUT
+      const method = JSON_URL.includes('npoint.io') ? 'POST' : 'PUT';
+
+      const response = await fetch(JSON_URL, {
+        method: method,
         headers: getHeaders(),
         body: JSON.stringify(bounties)
       });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('External storage error details:', errorText);
+        throw new Error(`External storage update failed: ${response.status} ${errorText}`);
+      }
     } else {
       const filePath = path.join(process.cwd(), 'app', 'data', 'activeBounties.json');
       await writeFile(filePath, JSON.stringify(bounties, null, 2));

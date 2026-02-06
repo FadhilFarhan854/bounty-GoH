@@ -22,7 +22,7 @@ export function Footer() {
             Est. MMXXIV • The Guild Archives
           </p>
           <p className="text-muted-foreground/40 text-xs italic">
-            "May your hunts be glorious and your rewards plentiful"
+            &quot;May your hunts be glorious and your rewards plentiful&quot;
           </p>
         </div>
       </div>

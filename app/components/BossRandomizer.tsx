@@ -10,9 +10,16 @@ import { bosses } from "../data/bosses";
 
 type Phase = "idle" | "shuffling" | "revealing" | "selected";
 
-export function BossRandomizer() {
+interface BossRandomizerProps {
+  onBountySelected?: (boss: Boss) => void;
+}
+
+export function BossRandomizer({ onBountySelected }: BossRandomizerProps) {
   const [phase, setPhase] = useState<Phase>("idle");
   const [selectedBoss, setSelectedBoss] = useState<Boss | null>(null);
+  
+  // Display only first 5 bosses as preview cards
+  const displayBosses = bosses.slice(0, 5);
 
   const invokeFate = useCallback(() => {
     setPhase("shuffling");
@@ -22,7 +29,7 @@ export function BossRandomizer() {
     setTimeout(() => {
       setPhase("revealing");
 
-      // Random selection
+      // Random selection from ALL bosses data
       const randomIndex = Math.floor(Math.random() * bosses.length);
       const chosen = bosses[randomIndex];
 
@@ -30,9 +37,13 @@ export function BossRandomizer() {
       setTimeout(() => {
         setSelectedBoss(chosen);
         setPhase("selected");
+        // Notify parent component about the selected bounty
+        if (onBountySelected) {
+          onBountySelected(chosen);
+        }
       }, 800);
     }, 1500);
-  }, []);
+  }, [onBountySelected]);
 
   const reset = useCallback(() => {
     setPhase("idle");
@@ -59,20 +70,56 @@ export function BossRandomizer() {
       {/* Cards Display */}
       <div className="flex justify-center items-center min-h-[450px] mb-12">
         <AnimatePresence mode="wait">
-          {/* Idle State - Show card backs */}
+          {/* Idle State - Show only 5 card backs */}
           {phase === "idle" && (
             <motion.div
               key="idle"
-              className="flex justify-center items-center gap-4 flex-wrap"
+              className="hidden md:flex justify-center items-center gap-4 flex-wrap"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0, scale: 0.9 }}
               transition={{ duration: 0.5 }}
             >
-              {bosses.map((_, index) => (
+              {displayBosses.map((_, index) => (
                 <div key={index} className="transform hover:scale-105 transition-transform">
                   <CardBack delay={index * 0.1} />
                 </div>
+              ))}
+            </motion.div>
+          )}
+
+          {/* Idle State - Mobile Stacked Cards */}
+          {phase === "idle" && (
+            <motion.div
+              key="idle-mobile"
+              className="md:hidden relative w-[200px] h-[320px]"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              transition={{ duration: 0.5 }}
+            >
+              {displayBosses.map((_, index) => (
+                <motion.div
+                  key={index}
+                  className="absolute top-0 left-1/2 -translate-x-1/2"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ 
+                    opacity: 1, 
+                    y: 0,
+                    rotate: (index - 2) * 5,
+                    x: (index - 2) * 8,
+                    scale: 0.7
+                  }}
+                  transition={{ 
+                    delay: index * 0.1,
+                    duration: 0.5 
+                  }}
+                  style={{
+                    zIndex: index
+                  }}
+                >
+                  <CardBack delay={0} />
+                </motion.div>
               ))}
             </motion.div>
           )}
@@ -86,18 +133,18 @@ export function BossRandomizer() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
             >
-              {bosses.map((_, index) => (
+              {displayBosses.map((_, index) => (
                 <motion.div
                   key={index}
                   className="absolute"
                   initial={{
-                    x: (index - 1.5) * 100,
+                    x: (index - 2) * 100,
                     rotate: 0,
                     scale: 1
                   }}
                   animate={{
                     x: [
-                      (index - 1.5) * 100,
+                      (index - 2) * 100,
                       Math.random() * 200 - 100,
                       Math.random() * 200 - 100,
                       0

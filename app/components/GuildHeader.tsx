@@ -34,11 +34,11 @@ export function GuildHeader() {
           </motion.div>
 
           <h1 className="font-cinzel text-5xl md:text-6xl lg:text-7xl tracking-wider">
-            <span className="gold-shimmer">Guild Archives</span>
+            <span className="gold-shimmer">Gates of Hell</span>
           </h1>
 
           <p className="mt-4 text-muted-foreground text-lg italic max-w-md mx-auto">
-            "Where hunters gather and legends are forged"
+            &quot;Where hunters gather and legends are forged&quot;
           </p>
         </div>
 

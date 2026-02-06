@@ -1,30 +1,62 @@
+"use client";
+import { useState } from "react";
 import Image from "next/image";
 import { Footer } from "./components/Footer";
 import { BossRandomizer } from "./components/BossRandomizer";
 import { GuildHeader } from "./components/GuildHeader";
+import { BountyLore } from "./components/BountyLore";
+import { ActiveBounty } from "./components/ActiveBounty";
+import { BackgroundMusic } from "./components/BackgroundMusic";
+import { Boss } from "./types/boss";
 
 export default function Home() {
+  const [activeBounty, setActiveBounty] = useState<Boss | null>(null);
+
   return (
     <div className="relative min-h-screen overflow-hidden">
+      {/* Background Music */}
+      <BackgroundMusic />
+      
       {/* Background layers */}
       <div
         className="fixed inset-0 bg-cover bg-center bg-no-repeat opacity-20 pointer-events-none"
         style={{ backgroundImage: `url("../assets/parchment-bg.jpg")` }}
       />
-      <div className="fixed inset-0 bg-gradient-to-b from-background via-background/95 to-background pointer-events-none" />
+      
+      {/* Radial gradient - bright golden center fading to dark edges */}
+      <div 
+        className="fixed inset-0 pointer-events-none"
+        style={{
+          background: 'radial-gradient(circle at center, hsl(38 45% 25%) 0%, hsl(30 25% 15%) 35%, hsl(25 20% 10%) 60%, hsl(20 15% 6%) 100%)'
+        }}
+      />
 
-      {/* Vignette overlay */}
-      <div className="fixed inset-0 pointer-events-none shadow-[inset_0_0_200px_rgba(0,0,0,0.8)]" />
+      {/* Enhanced vignette overlay for darker edges */}
+      <div className="fixed inset-0 pointer-events-none shadow-[inset_0_0_250px_rgba(0,0,0,0.9)]" />
 
-      {/* Subtle ambient particles/dust effect via radial gradient */}
-      <div className="fixed inset-0 pointer-events-none bg-radial-gold opacity-30" />
+      {/* Subtle golden glow in center */}
+      <div 
+        className="fixed inset-0 pointer-events-none opacity-40"
+        style={{
+          background: 'radial-gradient(circle at center, hsl(38 60% 30% / 0.3) 0%, transparent 50%)'
+        }}
+      />
 
       {/* Main content */}
       <div className="relative z-10 flex flex-col min-h-screen">
         <GuildHeader />
 
-        <main className="flex-1 flex items-center justify-center py-8">
-          <BossRandomizer />
+        <main className="flex-1 py-8">
+          {/* Bounty Lore Section */}
+          <BountyLore />
+
+          {/* Boss Randomizer */}
+          <div className="flex items-center justify-center">
+            <BossRandomizer onBountySelected={setActiveBounty} />
+          </div>
+
+          {/* Active Bounty Display */}
+          {activeBounty && <ActiveBounty boss={activeBounty} />}
         </main>
 
         <Footer />

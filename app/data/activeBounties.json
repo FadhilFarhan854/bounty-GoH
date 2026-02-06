@@ -1,0 +1,37 @@
+[
+  {
+    "id": "igneus",
+    "name": "Igneus",
+    "image": "/assets/Igneus.jpeg",
+    "bounty": "5,200,000 Spina",
+    "description": "The Flame General who commands the volcanic legions. His anger burns eternal."
+  },
+  {
+    "id": "mimyu",
+    "name": "Mimyu",
+    "image": "/assets/Mimyu.jpeg",
+    "bounty": "3,900,000 Spina",
+    "description": "The Mystic Sorceress who weaves illusions and reality. Her magic defies all known laws."
+  },
+  {
+    "id": "castila",
+    "name": "Castila",
+    "image": "/assets/Castila.jpeg",
+    "bounty": "4,500,000 Spina",
+    "description": "The Artificial Spirit created by the researchers. Her power rivals that of ancient gods."
+  },
+  {
+    "id": "auvio",
+    "name": "Auvio",
+    "image": "/assets/Auvio.jpeg",
+    "bounty": "6,800,000 Spina",
+    "description": "The Thunder Emperor who commands the storms. His lightning strikes without warning."
+  },
+  {
+    "id": "merzehal",
+    "name": "Merzehal",
+    "image": "/assets/Merzehal.jpeg",
+    "bounty": "7,500,000 Spina",
+    "description": "The Ancient Dragon who has lived for millennia. His wisdom is matched only by his devastating power."
+  }
+]

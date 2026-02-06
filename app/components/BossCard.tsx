@@ -20,6 +20,7 @@ export function BossCard({ boss, isSelected, isRevealed, onClick, delay = 0 }: B
         ${isSelected ? 'fate-card-selected' : 'fate-card'}
         rounded-lg overflow-hidden
         transition-all duration-500
+        mb-12
       `}
       initial={{ opacity: 0, rotateY: 180, scale: 0.8 }}
       animate={{
@@ -61,7 +62,7 @@ export function BossCard({ boss, isSelected, isRevealed, onClick, delay = 0 }: B
       </div>
 
       {/* Content */}
-      <div className="relative p-4 pt-2 space-y-3">
+      <div className="relative p-4 pt-2 space-y-3" style={{background: "radial-gradient(circle at center, hsl(38 45% 25%) 0%, hsl(30 25% 15%) 35%, hsl(25 20% 10%) 60%, hsl(20 15% 6%) 100%)"}}>
         {/* Boss Name */}
         <div className="flex items-center gap-2 justify-center">
           <Skull className="w-4 h-4 text-primary/60" />
@@ -84,7 +85,7 @@ export function BossCard({ boss, isSelected, isRevealed, onClick, delay = 0 }: B
         {/* Description */}
         {boss.description && (
           <p className="text-muted-foreground text-sm text-center italic leading-relaxed line-clamp-2">
-            "{boss.description}"
+            &quot;{boss.description}&quot;
           </p>
         )}
       </div>

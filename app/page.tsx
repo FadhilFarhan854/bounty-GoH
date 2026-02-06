@@ -1,20 +1,41 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Footer } from "./components/Footer";
 import { BossRandomizer } from "./components/BossRandomizer";
 import { GuildHeader } from "./components/GuildHeader";
 import { BountyLore } from "./components/BountyLore";
-import { ActiveBounty } from "./components/ActiveBounty";
+import { ActiveBountiesCarousel } from "./components/ActiveBountiesCarousel";
 import { IntroScreen } from "./components/IntroScreen";
 import { Boss } from "./types/boss";
 import { AnimatePresence } from "framer-motion";
 
 export default function Home() {
-  const [activeBounty, setActiveBounty] = useState<Boss | null>(null);
+  const [activeBounties, setActiveBounties] = useState<Boss[]>([]);
   const [showIntro, setShowIntro] = useState(true);
+
+  // Load saved bounties on mount
+  useEffect(() => {
+    const loadBounties = async () => {
+      try {
+        const response = await fetch('/api/bounties');
+        const data = await response.json();
+        if (data && data.length > 0) {
+          setActiveBounties(data);
+        }
+      } catch (error) {
+        console.error('Failed to load bounties:', error);
+      }
+    };
+    
+    loadBounties();
+  }, []);
 
   const handleIntroComplete = () => {
     setShowIntro(false);
+  };
+
+  const handleBountiesSelected = (bosses: Boss[]) => {
+    setActiveBounties(bosses);
   };
 
 
@@ -68,11 +89,11 @@ export default function Home() {
 
           {/* Boss Randomizer */}
           <div className="flex items-center justify-center">
-            <BossRandomizer onBountySelected={setActiveBounty} />
+            <BossRandomizer onBountiesSelected={handleBountiesSelected} />
           </div>
 
-          {/* Active Bounty Display */}
-          {activeBounty && <ActiveBounty boss={activeBounty} />}
+          {/* Active Bounties Carousel */}
+          {activeBounties.length > 0 && <ActiveBountiesCarousel bosses={activeBounties} />}
         </main>
 
         <Footer />

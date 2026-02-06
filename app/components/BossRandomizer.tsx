@@ -1,57 +1,93 @@
+/* eslint-disable react-hooks/purity */
 "use client";
 import { useState, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Sparkles, RotateCcw } from "lucide-react";
 import { BossCard } from "./BossCard";
 import { CardBack } from "./CardBack";
+import { StackedCards } from "./StackedCards";
+import { PasswordDialog } from "./PasswordDialog";
 import { Button } from "@/components/ui/button";
 import { Boss } from "../types/boss";
 import { bosses } from "../data/bosses";
+import { div } from "framer-motion/client";
 
 type Phase = "idle" | "shuffling" | "revealing" | "selected";
 
 interface BossRandomizerProps {
-  onBountySelected?: (boss: Boss) => void;
+  onBountiesSelected?: (bosses: Boss[]) => void;
 }
 
-export function BossRandomizer({ onBountySelected }: BossRandomizerProps) {
+export function BossRandomizer({ onBountiesSelected }: BossRandomizerProps) {
   const [phase, setPhase] = useState<Phase>("idle");
-  const [selectedBoss, setSelectedBoss] = useState<Boss | null>(null);
+  const [selectedBosses, setSelectedBosses] = useState<Boss[]>([]);
+  const [showPasswordDialog, setShowPasswordDialog] = useState(false);
   
   // Display only first 5 bosses as preview cards
   const displayBosses = bosses.slice(0, 5);
 
-  const invokeFate = useCallback(() => {
+  const handleInvokeFate = () => {
+    setShowPasswordDialog(true);
+  };
+
+  const handlePasswordSuccess = () => {
+    setShowPasswordDialog(false);
+    invokeFate();
+  };
+
+  const invokeFate = useCallback(async () => {
     setPhase("shuffling");
-    setSelectedBoss(null);
+    setSelectedBosses([]);
 
     // Shuffle animation duration
     setTimeout(() => {
       setPhase("revealing");
 
-      // Random selection from ALL bosses data
-      const randomIndex = Math.floor(Math.random() * bosses.length);
-      const chosen = bosses[randomIndex];
+      // Random selection of 5 UNIQUE bosses from ALL bosses data
+      const shuffled = [...bosses].sort(() => Math.random() - 0.5);
+      const chosen = shuffled.slice(0, 5);
 
       // Reveal delay
-      setTimeout(() => {
-        setSelectedBoss(chosen);
+      setTimeout(async () => {
+        setSelectedBosses(chosen);
         setPhase("selected");
-        // Notify parent component about the selected bounty
-        if (onBountySelected) {
-          onBountySelected(chosen);
+        
+        // Save to server
+        try {
+          await fetch('/api/bounties', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(chosen)
+          });
+        } catch (error) {
+          console.error('Failed to save bounties:', error);
+        }
+        
+        // Notify parent component about the selected bounties
+        if (onBountiesSelected) {
+          onBountiesSelected(chosen);
         }
       }, 800);
     }, 1500);
-  }, [onBountySelected]);
+  }, [onBountiesSelected]);
 
   const reset = useCallback(() => {
     setPhase("idle");
-    setSelectedBoss(null);
+    setSelectedBosses([]);
   }, []);
 
   return (
     <div className="w-full max-w-5xl mx-auto px-4">
+      {/* Password Dialog */}
+      <AnimatePresence>
+        {showPasswordDialog && (
+          <PasswordDialog
+            onSuccess={handlePasswordSuccess}
+            onCancel={() => setShowPasswordDialog(false)}
+          />
+        )}
+      </AnimatePresence>
+
       {/* Header */}
       <motion.div
         className="text-center mb-12"
@@ -63,12 +99,24 @@ export function BossRandomizer({ onBountySelected }: BossRandomizerProps) {
           The <span className="gold-shimmer">Hunting Ledger</span>
         </h2>
         <p className="text-muted-foreground text-lg italic max-w-xl mx-auto">
-          "Let fate guide thy blade. Draw from the ancient scrolls and discover what beast awaits..."
+          &quot;Let fate guide thy blade. Draw from the ancient scrolls and discover what beast awaits...&quot;
         </p>
       </motion.div>
 
       {/* Cards Display */}
-      <div className="flex justify-center items-center min-h-[450px] mb-12">
+      <div className="flex justify-center items-center min-h-[450px] mb-12 relative">
+        {/* Background for revealed cards */}
+        {(phase === "revealing" || phase === "selected") && selectedBosses.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="absolute inset-0 -m-8 rounded-lg bg-gradient-to-b from-card/40 via-card/60 to-card/40 border border-primary/10"
+            style={{
+              boxShadow: 'inset 0 0 60px rgba(0,0,0,0.3)'
+            }}
+          />
+        )}
+
         <AnimatePresence mode="wait">
           {/* Idle State - Show only 5 card backs */}
           {phase === "idle" && (
@@ -175,21 +223,43 @@ export function BossRandomizer({ onBountySelected }: BossRandomizerProps) {
             </motion.div>
           )}
 
-          {/* Revealing / Selected State */}
-          {(phase === "revealing" || phase === "selected") && selectedBoss && (
+          {/* Revealing / Selected State - Desktop: Show 5 cards in a row */}
+          {(phase === "revealing" || phase === "selected") && selectedBosses.length > 0 && (
             <motion.div
               key="selected"
-              className="flex justify-center items-center"
+              className="hidden md:flex flex-wrap justify-center items-center gap-4 relative z-10"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.5 }}
             >
-              <BossCard
-                boss={selectedBoss}
-                isSelected={phase === "selected"}
-                isRevealed={true}
-              />
+              {selectedBosses.map((boss, index) => (
+                <motion.div
+                  key={boss.id}
+                  initial={{ opacity: 0, scale: 0.8, rotateY: 180 }}
+                  animate={{ opacity: 1, scale: 1, rotateY: 0 }}
+                  transition={{ 
+                    delay: index * 0.2,
+                    duration: 0.6 
+                  }}
+                >
+                  <BossCard
+                    boss={boss}
+                    isSelected={phase === "selected"}
+                    isRevealed={true}
+                  />
+                </motion.div>
+              ))}
             </motion.div>
+          )}
+
+          {/* Revealing / Selected State - Mobile: Stacked Cards */}
+          {(phase === "revealing" || phase === "selected") && selectedBosses.length > 0 && (
+            <div className="md:hidden relative z-10">
+              <StackedCards 
+                bosses={selectedBosses}
+                isSelected={phase === "selected"}
+              />
+            </div>
           )}
         </AnimatePresence>
       </div>
@@ -203,7 +273,7 @@ export function BossRandomizer({ onBountySelected }: BossRandomizerProps) {
       >
         {phase === "idle" && (
           <Button
-            onClick={invokeFate}
+            onClick={handleInvokeFate}
             size="lg"
             className="
               btn-medieval px-10 py-7 text-xl
@@ -238,6 +308,8 @@ export function BossRandomizer({ onBountySelected }: BossRandomizerProps) {
         )}
 
         {phase === "selected" && (
+          <div>
+            <p>Slide to reveal another scroll</p>
           <Button
             onClick={reset}
             variant="outline"
@@ -253,12 +325,13 @@ export function BossRandomizer({ onBountySelected }: BossRandomizerProps) {
             <RotateCcw className="w-5 h-5 mr-3" />
             Draw Again
           </Button>
+          </div>
         )}
       </motion.div>
 
-      {/* Selected Boss Announcement */}
+      {/* Selected Bosses Announcement */}
       <AnimatePresence>
-        {phase === "selected" && selectedBoss && (
+        {phase === "selected" && selectedBosses.length > 0 && (
           <motion.div
             className="text-center mt-12"
             initial={{ opacity: 0, y: 20 }}
@@ -267,10 +340,10 @@ export function BossRandomizer({ onBountySelected }: BossRandomizerProps) {
             transition={{ duration: 0.5, delay: 0.3 }}
           >
             <p className="text-muted-foreground text-lg italic">
-              "The scrolls have spoken. Thy hunt begins for..."
+              &quot;The scrolls have spoken. Five hunters are chosen...&quot;
             </p>
-            <h3 className="font-cinzel text-3xl text-parchment mt-2 gold-shimmer">
-              {selectedBoss.name}
+            <h3 className="font-cinzel text-2xl md:text-3xl text-parchment mt-2 gold-shimmer">
+              This Week&apos;s Bounty List
             </h3>
           </motion.div>
         )}

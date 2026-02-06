@@ -1,42 +1,44 @@
 [
   {
-    "id": "hexter",
-    "name": "Hexter",
-    "image": "/assets/hexter.jpeg",
-    "bounty": "5,800,000 Spina",
-    "description": "A sinister being that wields dark curses. Those who face it often lose their minds before their lives.",
+    "id": "merzehal",
+    "name": "Merzehal",
+    "image": "/assets/Merzehal.jpeg",
+    "bounty": "7,500,000 Spina",
+    "description": "The Ancient Dragon who has lived for millennia. His wisdom is matched only by his devastating power.",
     "hunted": false
   },
   {
-    "id": "auvio",
-    "name": "Auvio",
-    "image": "/assets/Auvio.jpeg",
+    "id": "bovinari",
+    "name": "Bovinari",
+    "image": "/assets/bovinari.jpeg",
+    "bounty": "4,300,000 Spina",
+    "description": "A beast of primal rage. Its horns are said to pierce through the toughest armor.",
+    "hunted": true,
+    "huntedBy": "Frentzie",
+    "huntedAt": "2026-02-06T12:41:24.083Z"
+  },
+  {
+    "id": "walican",
+    "name": "Walican",
+    "image": "/assets/walican.jpeg",
+    "bounty": "3,600,000 Spina",
+    "description": "The ancient golem of the cliffs. It stands as a testament to a forgotten age of stone and magic.",
+    "hunted": false
+  },
+  {
+    "id": "kuzto",
+    "name": "Kuzto",
+    "image": "/assets/kuzto.jpeg",
+    "bounty": "4,700,000 Spina",
+    "description": "The keeper of the labyrinth. He traps wanderers in endless mazes of despair.",
+    "hunted": false
+  },
+  {
+    "id": "xyvio",
+    "name": "Xyvio",
+    "image": "/assets/Xyvio.jpeg",
     "bounty": "6,800,000 Spina",
     "description": "The Thunder Emperor who commands the storms. His lightning strikes without warning.",
-    "hunted": false
-  },
-  {
-    "id": "oculasignia",
-    "name": "Oculasignia",
-    "image": "/assets/oculasignia.jpeg",
-    "bounty": "7,800,000 Spina",
-    "description": "The all-seeing eye of the void. Nothing escapes its gaze, and no secret remains hidden.",
-    "hunted": false
-  },
-  {
-    "id": "castila",
-    "name": "Castila",
-    "image": "/assets/Castila.jpeg",
-    "bounty": "4,500,000 Spina",
-    "description": "The Artificial Spirit created by the researchers. Her power rivals that of ancient gods.",
-    "hunted": false
-  },
-  {
-    "id": "gespents",
-    "name": "Gespents",
-    "image": "/assets/Gespents.jpeg",
-    "bounty": "4,100,000 Spina",
-    "description": "The Phantom Knight who guards the cursed ruins. His spectral blade cuts through reality itself.",
     "hunted": false
   }
 ]

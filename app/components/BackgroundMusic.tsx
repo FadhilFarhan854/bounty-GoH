@@ -1,12 +1,35 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, forwardRef, useImperativeHandle } from "react";
 import { Volume2, VolumeX } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
-export function BackgroundMusic() {
+export interface BackgroundMusicRef {
+  play: () => Promise<void>;
+  pause: () => void;
+}
+
+export const BackgroundMusic = forwardRef<BackgroundMusicRef>((props, ref) => {
   const audioRef = useRef<HTMLAudioElement>(null);
   const [isMuted, setIsMuted] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
+
+  useImperativeHandle(ref, () => ({
+    play: async () => {
+      if (audioRef.current) {
+        try {
+          await audioRef.current.play();
+          setIsLoaded(true);
+        } catch (error) {
+          console.log("Failed to play audio:", error);
+        }
+      }
+    },
+    pause: () => {
+      if (audioRef.current) {
+        audioRef.current.pause();
+      }
+    }
+  }));
 
   useEffect(() => {
     const audio = audioRef.current;
@@ -14,31 +37,6 @@ export function BackgroundMusic() {
 
     // Set volume
     audio.volume = 0.3; // 30% volume agar tidak terlalu keras
-
-    // Try to autoplay
-    const playAudio = async () => {
-      try {
-        await audio.play();
-        setIsLoaded(true);
-      } catch (error) {
-        // Autoplay blocked by browser, user needs to interact first
-        console.log("Autoplay blocked. User interaction required.");
-        
-        // Add click listener to start audio on first interaction
-        const startAudio = async () => {
-          try {
-            await audio.play();
-            setIsLoaded(true);
-            document.removeEventListener("click", startAudio);
-          } catch (e) {
-            console.log("Failed to play audio:", e);
-          }
-        };
-        document.addEventListener("click", startAudio);
-      }
-    };
-
-    playAudio();
 
     return () => {
       audio.pause();
@@ -85,4 +83,6 @@ export function BackgroundMusic() {
       </AnimatePresence>
     </>
   );
-}
+});
+
+BackgroundMusic.displayName = "BackgroundMusic";

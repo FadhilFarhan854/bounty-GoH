@@ -1,21 +1,37 @@
 "use client";
 import { useState } from "react";
-import Image from "next/image";
 import { Footer } from "./components/Footer";
 import { BossRandomizer } from "./components/BossRandomizer";
 import { GuildHeader } from "./components/GuildHeader";
 import { BountyLore } from "./components/BountyLore";
 import { ActiveBounty } from "./components/ActiveBounty";
-import { BackgroundMusic } from "./components/BackgroundMusic";
+import { IntroScreen } from "./components/IntroScreen";
 import { Boss } from "./types/boss";
+import { AnimatePresence } from "framer-motion";
 
 export default function Home() {
   const [activeBounty, setActiveBounty] = useState<Boss | null>(null);
+  const [showIntro, setShowIntro] = useState(true);
+
+  const handleIntroComplete = () => {
+    setShowIntro(false);
+  };
+
 
   return (
     <div className="relative min-h-screen overflow-hidden">
+      {/* Intro Screen */}
+      <AnimatePresence>
+        {showIntro && (
+          <IntroScreen 
+            onComplete={handleIntroComplete}
+           
+          />
+        )}
+      </AnimatePresence>
+
       {/* Background Music */}
-      <BackgroundMusic />
+     
       
       {/* Background layers */}
       <div

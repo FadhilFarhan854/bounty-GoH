@@ -8,6 +8,12 @@ export const dynamic = 'force-dynamic';
 const JSON_URL = process.env.JSON_STORAGE_URL;
 const JSON_KEY = process.env.JSON_STORAGE_KEY;
 
+console.log('API Route Config:', {
+  hasJsonUrl: !!JSON_URL,
+  jsonUrl: JSON_URL ? 'Set' : 'Not Set',
+  cwd: process.cwd()
+});
+
 // Helper to get headers for external request
 const getHeaders = () => {
   const headers: Record<string, string> = {

@@ -5,7 +5,9 @@
     "image": "/assets/Merzehal.jpeg",
     "bounty": "7,500,000 Spina",
     "description": "The Ancient Dragon who has lived for millennia. His wisdom is matched only by his devastating power.",
-    "hunted": false
+    "hunted": true,
+    "huntedBy": "jjj",
+    "huntedAt": "2026-02-06T12:45:32.461Z"
   },
   {
     "id": "bovinari",

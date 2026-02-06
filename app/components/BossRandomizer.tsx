@@ -22,7 +22,7 @@ export function BossRandomizer({ onBountiesSelected }: BossRandomizerProps) {
   const [phase, setPhase] = useState<Phase>("idle");
   const [selectedBosses, setSelectedBosses] = useState<Boss[]>([]);
   const [showPasswordDialog, setShowPasswordDialog] = useState(false);
-  
+
   // Display only first 5 bosses as preview cards
   const displayBosses = bosses.slice(0, 5);
 
@@ -45,13 +45,18 @@ export function BossRandomizer({ onBountiesSelected }: BossRandomizerProps) {
 
       // Random selection of 5 UNIQUE bosses from ALL bosses data
       const shuffled = [...bosses].sort(() => Math.random() - 0.5);
-      const chosen = shuffled.slice(0, 5);
+      const chosen = shuffled.slice(0, 5).map(boss => ({
+        ...boss,
+        hunted: false,
+        huntedBy: undefined,
+        huntedAt: undefined
+      }));
 
       // Reveal delay
       setTimeout(async () => {
         setSelectedBosses(chosen);
         setPhase("selected");
-        
+
         // Save to server
         try {
           console.log('Saving bounties to server...', chosen);
@@ -62,14 +67,14 @@ export function BossRandomizer({ onBountiesSelected }: BossRandomizerProps) {
           });
           const result = await response.json();
           console.log('Save result:', result);
-          
+
           if (result.success) {
             console.log('Bounties saved successfully at:', result.timestamp);
           }
         } catch (error) {
           console.error('Failed to save bounties:', error);
         }
-        
+
         // Notify parent component about the selected bounties
         if (onBountiesSelected) {
           onBountiesSelected(chosen);
@@ -158,16 +163,16 @@ export function BossRandomizer({ onBountiesSelected }: BossRandomizerProps) {
                   key={index}
                   className="absolute top-0 left-1/2 -translate-x-1/2"
                   initial={{ opacity: 0, y: 20 }}
-                  animate={{ 
-                    opacity: 1, 
+                  animate={{
+                    opacity: 1,
                     y: 0,
                     rotate: (index - 2) * 5,
                     x: (index - 2) * 8,
                     scale: 0.7
                   }}
-                  transition={{ 
+                  transition={{
                     delay: index * 0.1,
-                    duration: 0.5 
+                    duration: 0.5
                   }}
                   style={{
                     zIndex: index
@@ -244,9 +249,9 @@ export function BossRandomizer({ onBountiesSelected }: BossRandomizerProps) {
                   key={boss.id}
                   initial={{ opacity: 0, scale: 0.8, rotateY: 180 }}
                   animate={{ opacity: 1, scale: 1, rotateY: 0 }}
-                  transition={{ 
+                  transition={{
                     delay: index * 0.2,
-                    duration: 0.6 
+                    duration: 0.6
                   }}
                 >
                   <BossCard
@@ -262,7 +267,7 @@ export function BossRandomizer({ onBountiesSelected }: BossRandomizerProps) {
           {/* Revealing / Selected State - Mobile: Stacked Cards */}
           {(phase === "revealing" || phase === "selected") && selectedBosses.length > 0 && (
             <div className="md:hidden relative z-10">
-              <StackedCards 
+              <StackedCards
                 bosses={selectedBosses}
                 isSelected={phase === "selected"}
               />
@@ -317,21 +322,21 @@ export function BossRandomizer({ onBountiesSelected }: BossRandomizerProps) {
         {phase === "selected" && (
           <div>
             <p>Slide to reveal another scroll</p>
-          <Button
-            onClick={reset}
-            variant="outline"
-            size="lg"
-            className="
+            <Button
+              onClick={reset}
+              variant="outline"
+              size="lg"
+              className="
               btn-medieval px-8 py-6 text-lg
               font-cinzel tracking-wider
               text-parchment
               border-primary/40 hover:border-primary/60
               transition-all duration-300
             "
-          >
-            <RotateCcw className="w-5 h-5 mr-3" />
-            Draw Again
-          </Button>
+            >
+              <RotateCcw className="w-5 h-5 mr-3" />
+              Draw Again
+            </Button>
           </div>
         )}
       </motion.div>

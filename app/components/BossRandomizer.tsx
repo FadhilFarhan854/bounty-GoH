@@ -54,11 +54,18 @@ export function BossRandomizer({ onBountiesSelected }: BossRandomizerProps) {
         
         // Save to server
         try {
-          await fetch('/api/bounties', {
+          console.log('Saving bounties to server...', chosen);
+          const response = await fetch('/api/bounties', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(chosen)
           });
+          const result = await response.json();
+          console.log('Save result:', result);
+          
+          if (result.success) {
+            console.log('Bounties saved successfully at:', result.timestamp);
+          }
         } catch (error) {
           console.error('Failed to save bounties:', error);
         }

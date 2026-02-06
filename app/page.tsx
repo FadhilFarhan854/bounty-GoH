@@ -17,10 +17,18 @@ export default function Home() {
   useEffect(() => {
     const loadBounties = async () => {
       try {
-        const response = await fetch('/api/bounties');
+        console.log('Loading bounties from server...');
+        const response = await fetch('/api/bounties', {
+          cache: 'no-store' // Prevent caching
+        });
         const data = await response.json();
+        console.log('Loaded bounties:', data);
+        
         if (data && data.length > 0) {
           setActiveBounties(data);
+          console.log('Active bounties set:', data.length, 'bosses');
+        } else {
+          console.log('No saved bounties found');
         }
       } catch (error) {
         console.error('Failed to load bounties:', error);

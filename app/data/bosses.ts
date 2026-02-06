@@ -4,7 +4,7 @@ export const bosses: Boss[] = [
     {
         id: "xyvio",
         name: "Xyvio",
-        image: "/assets/Auvio.jpeg",
+        image: "/assets/Xyvio.jpeg",
         bounty: "6,800,000 Spina",
         description: "The Thunder Emperor who commands the storms. His lightning strikes without warning.",
     },

@@ -1,42 +1,82 @@
 [
   {
-    "id": "bovinari",
-    "name": "Bovinari",
-    "image": "/assetw/bovinari.webp",
-    "bounty": "4,300,000 Spina",
-    "description": "A beast of primal rage. Its horns are said to pierce through the toughest armor.",
+    "id": "oculasignia",
+    "name": "Oculasignia",
+    "image": "/assetw/oculasignia.webp",
+    "bounty": "4,800,000 Spina",
+    "description": "The all-seeing eye of the void. Nothing escapes its gaze, and no secret remains hidden.",
     "hunted": false
   },
   {
-    "id": "rondine",
-    "name": "Rondine",
-    "image": "/assetw/rondine.webp",
-    "bounty": "4,000,000 Spina",
-    "description": "A swift assassin who strikes like the wind. By the time you hear her, it's too late.",
+    "id": "rudis",
+    "name": "Rudis",
+    "image": "/assetw/Rudis.webp",
+    "bounty": "2,500,000 Spina",
+    "description": "The brutal gladiator champion. Countless warriors have fallen to his blade.",
     "hunted": false
   },
   {
-    "id": "ferzen",
-    "name": "Ferzen",
-    "image": "/assetw/Ferzen.webp",
-    "bounty": "5,600,000 Spina",
-    "description": "The Ice Lord whose frozen domain knows no mercy. His cold heart matches his frozen powers.",
+    "id": "merzehal",
+    "name": "Merzehal",
+    "image": "/assetw/Merzehal.webp",
+    "bounty": "7,700,000 Spina",
+    "description": "The Ancient Dragon who has lived for millennia. His wisdom is matched only by his devastating power.",
+    "hunted": false
+  },
+  {
+    "id": "neo-maton-sword",
+    "name": "Neo Maton Sword",
+    "image": "/assetw/Neo-maton.webp",
+    "bounty": "7,100,000 Spina",
+    "description": "A mechanical warrior from a lost civilization. Its blade can cut through dimensions.",
     "hunted": false
   },
   {
     "id": "black-shadow",
     "name": "Black Shadow",
     "image": "/assetw/Black_shadow.webp",
-    "bounty": "9,200,000 Spina",
+    "bounty": "2,200,000 Spina",
     "description": "The embodiment of darkness itself. It exists in the space between light and void.",
     "hunted": false
   },
   {
-    "id": "volgagon",
-    "name": "Volgagon",
-    "image": "/assetw/Volgagon.webp",
-    "bounty": "8,800,000 Spina",
-    "description": "The volcanic dragon. Lava flows through its veins and its breath incinerates everything.",
+    "id": "reliza",
+    "name": "Reliza",
+    "image": "/assetw/Reliza.webp",
+    "bounty": "7,000,000 Spina",
+    "description": "The frost maiden who brings eternal winter. Her heart is colder than the ice she commands.",
+    "hunted": false
+  },
+  {
+    "id": "ferzen",
+    "name": "Ferzen",
+    "image": "/assetw/Ferzen.webp",
+    "bounty": "2,200,000 Spina",
+    "description": "The Ice Lord whose frozen domain knows no mercy. His cold heart matches his frozen powers.",
+    "hunted": false
+  },
+  {
+    "id": "filrocas",
+    "name": "Filrocas",
+    "image": "/assetw/Filrocas.webp",
+    "bounty": "4,500,000 Spina",
+    "description": "The plague doctor who spreads pestilence. His touch brings disease and despair.",
+    "hunted": false
+  },
+  {
+    "id": "kuzto",
+    "name": "Kuzto",
+    "image": "/assetw/kuzto.webp",
+    "bounty": "2,000,000 Spina",
+    "description": "The keeper of the labyrinth. He traps wanderers in endless mazes of despair.",
+    "hunted": false
+  },
+  {
+    "id": "gravicep",
+    "name": "Gravicep",
+    "image": "/assetw/Gravicep.webp",
+    "bounty": "4,500,000 Spina",
+    "description": "A monstrous entity with gravity-defying strength. Its crushing blows can flatten mountains.",
     "hunted": false
   }
 ]

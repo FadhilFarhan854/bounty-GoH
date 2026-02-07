@@ -16,14 +16,18 @@ type Phase = "idle" | "shuffling" | "revealing" | "selected";
 
 interface BossRandomizerProps {
   onBountiesSelected?: (bosses: Boss[]) => void;
+  activeBounties?: Boss[];
 }
 
-export function BossRandomizer({ onBountiesSelected }: BossRandomizerProps) {
+export function BossRandomizer({ onBountiesSelected, activeBounties = [] }: BossRandomizerProps) {
   const [phase, setPhase] = useState<Phase>("idle");
   const [selectedBosses, setSelectedBosses] = useState<Boss[]>([]);
   const [showPasswordDialog, setShowPasswordDialog] = useState(false);
 
-  // Display only first 5 bosses as preview cards
+  // Check if all active bounties are hunted (button should be locked if not all hunted)
+  const allBountiesHunted = activeBounties.length === 0 || activeBounties.every(boss => boss.hunted);
+
+  // Display only first 5 bosses as preview cards (idle state)
   const displayBosses = bosses.slice(0, 5);
 
   const handleInvokeFate = () => {
@@ -43,9 +47,9 @@ export function BossRandomizer({ onBountiesSelected }: BossRandomizerProps) {
     setTimeout(() => {
       setPhase("revealing");
 
-      // Random selection of 5 UNIQUE bosses from ALL bosses data
+      // Random selection of 10 UNIQUE bosses from ALL bosses data
       const shuffled = [...bosses].sort(() => Math.random() - 0.5);
-      const chosen = shuffled.slice(0, 5).map(boss => ({
+      const chosen = shuffled.slice(0, 10).map(boss => ({
         ...boss,
         hunted: false,
         huntedBy: undefined,
@@ -278,27 +282,37 @@ export function BossRandomizer({ onBountiesSelected }: BossRandomizerProps) {
 
       {/* Action Button */}
       <motion.div
-        className="flex justify-center gap-4"
+        className="flex flex-col justify-center items-center gap-4"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8, delay: 0.3 }}
       >
         {phase === "idle" && (
-          <Button
-            onClick={handleInvokeFate}
-            size="lg"
-            className="
-              btn-medieval px-10 py-7 text-xl
-              font-cinzel tracking-wider
-              text-parchment
-              rune-glow hover:rune-glow-active
-              transition-all duration-300
-              group
-            "
-          >
-            <Sparkles className="w-5 h-5 mr-3 text-primary group-hover:animate-pulse" />
-            Invoke Fate
-          </Button>
+          <div className="flex flex-col items-center gap-3">
+            <Button
+              onClick={handleInvokeFate}
+              size="lg"
+              disabled={!allBountiesHunted}
+              className={`
+                btn-medieval px-10 py-7 text-xl
+                font-cinzel tracking-wider
+                text-parchment
+                transition-all duration-300
+                group
+                ${allBountiesHunted 
+                  ? 'rune-glow hover:rune-glow-active' 
+                  : 'opacity-50 cursor-not-allowed'}
+              `}
+            >
+              <Sparkles className="w-5 h-5 mr-3 text-primary group-hover:animate-pulse" />
+              Invoke Fate
+            </Button>
+            {!allBountiesHunted && (
+              <p className="text-muted-foreground text-sm italic text-center">
+                &quot;Complete all active bounties before invoking fate again...&quot;
+              </p>
+            )}
+          </div>
         )}
 
         {phase === "shuffling" && (

@@ -136,7 +136,10 @@ export default function Home() {
 
           {/* Boss Randomizer */}
           <div className="flex items-center justify-center">
-            <BossRandomizer onBountiesSelected={handleBountiesSelected} />
+            <BossRandomizer 
+              onBountiesSelected={handleBountiesSelected} 
+              activeBounties={activeBounties}
+            />
           </div>
 
           {/* Active Bounties Carousel */}

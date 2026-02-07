@@ -1,46 +1,42 @@
 [
   {
-    "id": "merzehal",
-    "name": "Merzehal",
-    "image": "/assets/Merzehal.jpeg",
-    "bounty": "7,500,000 Spina",
-    "description": "The Ancient Dragon who has lived for millennia. His wisdom is matched only by his devastating power.",
-    "hunted": true,
-    "huntedBy": "jjj",
-    "huntedAt": "2026-02-06T12:45:32.461Z"
-  },
-  {
     "id": "bovinari",
     "name": "Bovinari",
-    "image": "/assets/bovinari.jpeg",
+    "image": "/assetw/bovinari.webp",
     "bounty": "4,300,000 Spina",
     "description": "A beast of primal rage. Its horns are said to pierce through the toughest armor.",
-    "hunted": true,
-    "huntedBy": "Frentzie",
-    "huntedAt": "2026-02-06T12:41:24.083Z"
-  },
-  {
-    "id": "walican",
-    "name": "Walican",
-    "image": "/assets/walican.jpeg",
-    "bounty": "3,600,000 Spina",
-    "description": "The ancient golem of the cliffs. It stands as a testament to a forgotten age of stone and magic.",
     "hunted": false
   },
   {
-    "id": "kuzto",
-    "name": "Kuzto",
-    "image": "/assets/kuzto.jpeg",
-    "bounty": "4,700,000 Spina",
-    "description": "The keeper of the labyrinth. He traps wanderers in endless mazes of despair.",
+    "id": "rondine",
+    "name": "Rondine",
+    "image": "/assetw/rondine.webp",
+    "bounty": "4,000,000 Spina",
+    "description": "A swift assassin who strikes like the wind. By the time you hear her, it's too late.",
     "hunted": false
   },
   {
-    "id": "xyvio",
-    "name": "Xyvio",
-    "image": "/assets/Xyvio.jpeg",
-    "bounty": "6,800,000 Spina",
-    "description": "The Thunder Emperor who commands the storms. His lightning strikes without warning.",
+    "id": "ferzen",
+    "name": "Ferzen",
+    "image": "/assetw/Ferzen.webp",
+    "bounty": "5,600,000 Spina",
+    "description": "The Ice Lord whose frozen domain knows no mercy. His cold heart matches his frozen powers.",
+    "hunted": false
+  },
+  {
+    "id": "black-shadow",
+    "name": "Black Shadow",
+    "image": "/assetw/Black_shadow.webp",
+    "bounty": "9,200,000 Spina",
+    "description": "The embodiment of darkness itself. It exists in the space between light and void.",
+    "hunted": false
+  },
+  {
+    "id": "volgagon",
+    "name": "Volgagon",
+    "image": "/assetw/Volgagon.webp",
+    "bounty": "8,800,000 Spina",
+    "description": "The volcanic dragon. Lava flows through its veins and its breath incinerates everything.",
     "hunted": false
   }
 ]

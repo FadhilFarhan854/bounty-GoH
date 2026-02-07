@@ -165,7 +165,7 @@ export const bosses: Boss[] = [
     {
         id: "walican",
         name: "Walican",
-        image: "/assetw/walican.webp",
+        image: "/assetw/Walican.webp",
         bounty: "3,600,000 Spina",
         description: "The ancient golem of the cliffs. It stands as a testament to a forgotten age of stone and magic.",
     },
@@ -235,7 +235,7 @@ export const bosses: Boss[] = [
     {
         id: "neo-maton-sword",
         name: "Neo Maton Sword",
-        image: "/assetw/Neo-Maton-Sword.webp",
+        image: "/assetw/Neo-maton.webp",
         bounty: "7,900,000 Spina",
         description: "A mechanical warrior from a lost civilization. Its blade can cut through dimensions.",
     },

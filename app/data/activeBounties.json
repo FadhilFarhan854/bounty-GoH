@@ -77,6 +77,8 @@
     "image": "/assetw/Gravicep.webp",
     "bounty": "4,500,000 Spina",
     "description": "A monstrous entity with gravity-defying strength. Its crushing blows can flatten mountains.",
-    "hunted": false
+    "hunted": true,
+    "huntedBy": "Klepon",
+    "huntedAt": "2026-02-07T16:35:00.945Z"
   }
 ]

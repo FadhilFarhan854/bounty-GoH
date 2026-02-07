@@ -73,10 +73,10 @@ export function HuntedDialog({ bossName, onSuccess, onCancel }: HuntedDialogProp
             <Sword className="w-12 h-12 text-primary mx-auto mb-4" />
           </motion.div>
           <h3 className="font-cinzel text-2xl text-parchment mb-2">
-            Victory Claim
+            Claim Thy Victory
           </h3>
           <p className="text-sm text-muted-foreground italic">
-            &quot;{bossName} awaits thy claim...&quot;
+            &quot;The beast {bossName} lies defeated. Who shall be immortalized?&quot;
           </p>
         </div>
 
@@ -84,9 +84,15 @@ export function HuntedDialog({ bossName, onSuccess, onCancel }: HuntedDialogProp
           <>
             {/* Lore */}
             <div className="bg-muted/20 border border-primary/20 rounded p-4 mb-6">
+              <p className="text-sm text-muted-foreground leading-relaxed mb-3">
+                <span className="text-primary font-semibold italic">&quot;Blood has been spilled, and a beast has fallen...&quot;</span>
+              </p>
               <p className="text-sm text-muted-foreground leading-relaxed">
-                To claim victory over <span className="text-parchment font-semibold">{bossName}</span>,
-                thou must prove thy membership with the <span className="text-primary font-semibold">Guild Cipher</span>.
+                To inscribe <span className="text-parchment font-semibold">{bossName}</span>&apos;s 
+                defeat into the <span className="text-primary font-semibold">Sacred Ledger</span>, 
+                thou must first prove thy allegiance to the Guild. 
+                Only those who bear the <span className="text-parchment font-semibold">Guild Cipher</span> may 
+                mark a bounty as claimed.
               </p>
             </div>
 
@@ -143,9 +149,12 @@ export function HuntedDialog({ bossName, onSuccess, onCancel }: HuntedDialogProp
           <>
             {/* Hunter Name Form */}
             <div className="bg-primary/10 border border-primary/20 rounded p-4 mb-6">
+              <p className="text-sm text-muted-foreground leading-relaxed mb-3">
+                <span className="text-primary font-semibold italic">&quot;The seal recognizes thee, brave hunter...&quot;</span>
+              </p>
               <p className="text-sm text-parchment leading-relaxed text-center">
                 <Sword className="w-5 h-5 inline text-primary mr-2" />
-                Name the brave hunter who slayed <span className="font-semibold">{bossName}</span>
+                Now inscribe thy name upon the ledger—let all know who vanquished the fearsome <span className="font-semibold text-primary">{bossName}</span>!
               </p>
             </div>
 

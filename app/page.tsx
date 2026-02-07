@@ -4,6 +4,7 @@ import { Footer } from "./components/Footer";
 import { BossRandomizer } from "./components/BossRandomizer";
 import { GuildHeader } from "./components/GuildHeader";
 import { BountyLore } from "./components/BountyLore";
+import { BonusBounty } from "./components/BonusBounty";
 import { ActiveBountiesCarousel } from "./components/ActiveBountiesCarousel";
 import { IntroScreen } from "./components/IntroScreen";
 import { Boss } from "./types/boss";
@@ -149,6 +150,9 @@ export default function Home() {
               onBossHunted={handleBossHunted}
             />
           )}
+
+          {/* Bonus Bounty Section */}
+          <BonusBounty />
         </main>
 
         <Footer />

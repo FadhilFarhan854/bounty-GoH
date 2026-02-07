@@ -9,15 +9,15 @@ export const bosses: Boss[] = [
         description: "The Thunder Emperor who commands the storms. His lightning strikes without warning.",
     },
     {
-        id: "castila",
-        name: "Castila",
+        id: "castilia",
+        name: "Castilia",
         image: "/assetw/Castila.webp",
         bounty: "4,500,000 Spina",
         description: "The Artificial Spirit created by the researchers. Her power rivals that of ancient gods.",
     },
     {
         id: "eto",
-        name: "Eto",
+        name: "Etoise",
         image: "/assetw/Eto.webp",
         bounty: "3,200,000 Spina",
         description: "The Shadow Assassin who moves unseen. No one has ever witnessed her true form.",
@@ -388,7 +388,7 @@ export const bosses: Boss[] = [
     },
     {
         id: "spreme-evil-crystal-beast",
-        name: "Spreme Evil Crystal Beast",
+        name: "Supreme Evil Crystal Beast",
         image: "/assetw/spreme_evil_crystal_beast.webp",
         bounty: "9,800,000 Spina",
         description: "The ultimate crystalline horror. Born from pure malevolence, it absorbs the power of all it defeats.",
@@ -406,5 +406,12 @@ export const bosses: Boss[] = [
         image: "/assetw/Zapo.webp",
         bounty: "4,500,000 Spina",
         description: "An electric enigma that moves at lightning speed. Its attacks are as unpredictable as they are deadly.",
+    },
+    {
+        id: "velum",
+        name: "Velum",
+        image: "/assetw/velum.webp",
+        bounty: "7,000,000 Spina",
+        description: "The void manipulator who bends space itself. Reality warps around its presence.",
     },
 ];

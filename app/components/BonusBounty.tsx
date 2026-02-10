@@ -39,8 +39,11 @@ export function BonusBounty() {
             <p className="text-sm">
               Semua bonus bounty hanya berlaku untuk boss dengan difficulty <span className="text-primary font-bold">Ultimate</span>.
             </p>
+            <p className="text-sm">
+             
+            </p>
             <p className="text-xs italic mt-2 text-muted-foreground">
-              &quot;Hanya tantangan terbesar yang layak mendapat hadiah terbesar...&quot;
+               Bounty akan dibagikan setiap <span className="text-primary font-bold">Malam minggu</span> di <span className="text-primary font-bold">Guild Bar</span>.
             </p>
           </div>
 

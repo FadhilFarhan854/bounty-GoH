@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Cinzel, Crimson_Text } from "next/font/google";
 import "./globals.css";
 import { MusicProvider } from "./components/MusicProvider";
+import { Navigation } from "./components/Navigation";
 
 
 const cinzel = Cinzel({
@@ -32,6 +33,7 @@ export default function RootLayout({
         className={`${cinzel.variable} ${crimsonText.variable} antialiased`}
       >
         <MusicProvider>
+          <Navigation />
           {children}
         </MusicProvider>
       </body>

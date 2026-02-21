@@ -1,7 +1,19 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
-import { Volume2, VolumeX } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { createContext, useContext, useEffect, useRef, useState } from "react";
+
+interface MusicContextType {
+  isMuted: boolean;
+  isLoaded: boolean;
+  toggleMute: () => void;
+}
+
+const MusicContext = createContext<MusicContextType>({
+  isMuted: false,
+  isLoaded: false,
+  toggleMute: () => {},
+});
+
+export const useMusic = () => useContext(MusicContext);
 
 export function MusicProvider({ children }: { children: React.ReactNode }) {
   const audioRef = useRef<HTMLAudioElement>(null);
@@ -52,33 +64,13 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <>
+    <MusicContext.Provider value={{ isMuted, isLoaded, toggleMute }}>
       {/* Audio Element */}
       <audio ref={audioRef} loop preload="auto">
         <source src="/assets/campfire.mp3" type="audio/mpeg" />
       </audio>
 
-      {/* Mute/Unmute Button */}
-      <AnimatePresence>
-        {isLoaded && (
-          <motion.button
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.8 }}
-            onClick={toggleMute}
-            className="fixed bottom-8 right-8 z-50 p-4 rounded-full bg-card/80 backdrop-blur-sm border-2 border-primary/40 hover:border-primary/60 transition-all duration-300 hover:scale-110 group"
-            title={isMuted ? "Unmute Music" : "Mute Music"}
-          >
-            {isMuted ? (
-              <VolumeX className="w-6 h-6 text-muted-foreground group-hover:text-primary transition-colors" />
-            ) : (
-              <Volume2 className="w-6 h-6 text-primary group-hover:text-gold-glow transition-colors" />
-            )}
-          </motion.button>
-        )}
-      </AnimatePresence>
-
       {children}
-    </>
+    </MusicContext.Provider>
   );
 }

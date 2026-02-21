@@ -1,19 +1,24 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextResponse } from 'next/server';
-import { writeFile, readFile, mkdir } from 'fs/promises';
+import { v2 as cloudinary } from 'cloudinary';
+import { readFile, writeFile } from 'fs/promises';
 import path from 'path';
 
-// Force dynamic to enable file system operations
 export const dynamic = 'force-dynamic';
+
+// Cloudinary configuration
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
 
 // External JSON storage for gallery metadata
 const GALLERY_JSON_URL = process.env.GALLERY_JSON_URL;
 const GALLERY_JSON_KEY = process.env.GALLERY_JSON_KEY;
-
 const GALLERY_JSON_PATH = path.join(process.cwd(), 'app', 'data', 'gallery.json');
-const UPLOADS_DIR = path.join(process.cwd(), 'public', 'uploads', 'gallery');
 
-// Helper to get headers for external request
+// Helper to get headers for external JSON request
 const getHeaders = () => {
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
@@ -26,13 +31,13 @@ const getHeaders = () => {
   return headers;
 };
 
-// Helper to read gallery data
+// Helper to read gallery metadata
 async function getGalleryData(): Promise<any[]> {
   try {
     if (GALLERY_JSON_URL) {
       const response = await fetch(GALLERY_JSON_URL, {
         headers: getHeaders(),
-        cache: 'no-store'
+        cache: 'no-store',
       });
       if (!response.ok) {
         throw new Error(`External storage fetch failed: ${response.statusText}`);
@@ -41,7 +46,7 @@ async function getGalleryData(): Promise<any[]> {
       return data.record || data || [];
     }
 
-    // Fallback to local file
+    // Fallback to local file (dev only)
     const fileContent = await readFile(GALLERY_JSON_PATH, 'utf-8');
     return JSON.parse(fileContent);
   } catch {
@@ -49,7 +54,7 @@ async function getGalleryData(): Promise<any[]> {
   }
 }
 
-// Helper to save gallery data
+// Helper to save gallery metadata
 async function saveGalleryData(data: any[]): Promise<boolean> {
   try {
     if (GALLERY_JSON_URL) {
@@ -57,12 +62,12 @@ async function saveGalleryData(data: any[]): Promise<boolean> {
       const response = await fetch(GALLERY_JSON_URL, {
         method,
         headers: getHeaders(),
-        body: JSON.stringify(data)
+        body: JSON.stringify(data),
       });
       return response.ok;
     }
 
-    // Fallback to local file
+    // Fallback to local file (dev only)
     await writeFile(GALLERY_JSON_PATH, JSON.stringify(data, null, 2));
     return true;
   } catch (error) {
@@ -82,13 +87,13 @@ export async function GET() {
   }
 }
 
-// POST - Upload new image or video
+// POST - Upload file to Cloudinary and save metadata to JSON
 export async function POST(request: Request) {
   try {
     const formData = await request.formData();
     const file = formData.get('file') as File;
-    const caption = formData.get('caption') as string || '';
-    const uploadedBy = formData.get('uploadedBy') as string || 'Anonymous Hunter';
+    const caption = (formData.get('caption') as string) || '';
+    const uploadedBy = (formData.get('uploadedBy') as string) || 'Anonymous Hunter';
 
     if (!file) {
       return NextResponse.json(
@@ -97,13 +102,6 @@ export async function POST(request: Request) {
       );
     }
 
-    // Ensure uploads directory exists
-    await mkdir(UPLOADS_DIR, { recursive: true });
-
-    const bytes = await file.arrayBuffer();
-    const buffer = Buffer.from(bytes);
-
-    const timestamp = Date.now();
     const isVideo = file.type.startsWith('video/');
     const isImage = file.type.startsWith('image/');
 
@@ -114,44 +112,42 @@ export async function POST(request: Request) {
       );
     }
 
-    let finalPath: string;
+    // Convert file to base64 data URI for Cloudinary upload
+    const bytes = await file.arrayBuffer();
+    const buffer = Buffer.from(bytes);
+    const base64 = buffer.toString('base64');
+    const dataUri = `data:${file.type};base64,${base64}`;
 
-    if (isImage) {
-      // Check if already webp, otherwise use original extension
-      const isWebp = file.type === 'image/webp';
-      const ext = isWebp ? 'webp' : (file.name.split('.').pop() || 'png');
-      const imageFilename = `img_${timestamp}.${ext}`;
-      const imagePath = path.join(UPLOADS_DIR, imageFilename);
-      
-      await writeFile(imagePath, buffer);
-      finalPath = `/uploads/gallery/${imageFilename}`;
-    } else {
-      // For videos, keep original format
-      const ext = file.name.split('.').pop() || 'mp4';
-      const videoFilename = `vid_${timestamp}.${ext}`;
-      const videoPath = path.join(UPLOADS_DIR, videoFilename);
-      
-      await writeFile(videoPath, buffer);
-      finalPath = `/uploads/gallery/${videoFilename}`;
-    }
+    const timestamp = Date.now();
 
-    // Create gallery item
+    // Upload to Cloudinary
+    const uploadResult = await cloudinary.uploader.upload(dataUri, {
+      folder: 'goh-gallery',
+      public_id: `${isVideo ? 'vid' : 'img'}_${timestamp}`,
+      resource_type: isVideo ? 'video' : 'image',
+      overwrite: true,
+    });
+
+    // Create gallery item with Cloudinary URL
     const galleryItem = {
       id: `gallery_${timestamp}`,
       type: isVideo ? 'video' : 'image',
-      path: finalPath,
-      thumbnail: null, // No thumbnail without sharp
+      path: uploadResult.secure_url,
+      publicId: uploadResult.public_id,
+      thumbnail: isVideo
+        ? uploadResult.secure_url.replace(/\.[^/.]+$/, '.jpg')
+        : null,
       caption,
       uploadedBy,
       uploadedAt: new Date().toISOString(),
     };
 
-    // Add to gallery data
+    // Save metadata to JSON storage
     const gallery = await getGalleryData();
-    gallery.unshift(galleryItem); // Add to beginning
+    gallery.unshift(galleryItem);
     await saveGalleryData(gallery);
 
-    console.log('Gallery item uploaded:', galleryItem);
+    console.log('Gallery item uploaded to Cloudinary:', galleryItem.id);
     return NextResponse.json({ success: true, item: galleryItem });
   } catch (error) {
     console.error('Error uploading to gallery:', error);
@@ -162,7 +158,7 @@ export async function POST(request: Request) {
   }
 }
 
-// DELETE - Remove gallery item
+// DELETE - Remove gallery item from Cloudinary and JSON
 export async function DELETE(request: Request) {
   try {
     const { id } = await request.json();
@@ -175,15 +171,31 @@ export async function DELETE(request: Request) {
     }
 
     const gallery = await getGalleryData();
-    const updatedGallery = gallery.filter((item: any) => item.id !== id);
+    const itemToDelete = gallery.find((item: any) => item.id === id);
 
-    if (gallery.length === updatedGallery.length) {
+    if (!itemToDelete) {
       return NextResponse.json(
         { success: false, error: 'Item not found' },
         { status: 404 }
       );
     }
 
+    // Delete from Cloudinary if publicId exists
+    if (itemToDelete.publicId) {
+      try {
+        const resourceType = itemToDelete.type === 'video' ? 'video' : 'image';
+        await cloudinary.uploader.destroy(itemToDelete.publicId, {
+          resource_type: resourceType,
+        });
+        console.log('Deleted from Cloudinary:', itemToDelete.publicId);
+      } catch (cloudErr) {
+        console.error('Cloudinary delete error (continuing):', cloudErr);
+        // Continue to remove from JSON even if Cloudinary delete fails
+      }
+    }
+
+    // Remove from JSON storage
+    const updatedGallery = gallery.filter((item: any) => item.id !== id);
     await saveGalleryData(updatedGallery);
 
     console.log('Gallery item deleted:', id);

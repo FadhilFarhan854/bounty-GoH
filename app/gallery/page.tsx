@@ -81,7 +81,10 @@ export default function GalleryPage() {
   };
 
   const handleUpload = async () => {
-    if (!uploadForm.file) return;
+    if (!uploadForm.file) {
+      alert('Please select a file');
+      return;
+    }
 
     setIsUploading(true);
     try {
@@ -106,7 +109,7 @@ export default function GalleryPage() {
       }
     } catch (error) {
       console.error('Upload error:', error);
-      alert('Failed to upload file');
+      alert('Failed to upload: ' + error);
     } finally {
       setIsUploading(false);
     }
@@ -520,7 +523,7 @@ export default function GalleryPage() {
                 </p>
               </div>
 
-              {/* File upload area */}
+              {/* File Upload */}
               <div className="mb-6">
                 <input
                   ref={fileInputRef}

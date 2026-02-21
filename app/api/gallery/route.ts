@@ -4,6 +4,13 @@ import { v2 as cloudinary } from 'cloudinary';
 import { readFile, writeFile } from 'fs/promises';
 import path from 'path';
 
+// Log config on startup (no secrets)
+console.log('Gallery API Config:', {
+  hasCloudinary: !!(process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY),
+  hasJsonUrl: !!process.env.GALLERY_JSON_URL,
+  cloudName: process.env.CLOUDINARY_CLOUD_NAME || 'NOT SET',
+});
+
 export const dynamic = 'force-dynamic';
 
 // Cloudinary configuration
@@ -15,41 +22,31 @@ cloudinary.config({
 
 // External JSON storage for gallery metadata
 const GALLERY_JSON_URL = process.env.GALLERY_JSON_URL;
-const GALLERY_JSON_KEY = process.env.GALLERY_JSON_KEY;
 const GALLERY_JSON_PATH = path.join(process.cwd(), 'app', 'data', 'gallery.json');
-
-// Helper to get headers for external JSON request
-const getHeaders = () => {
-  const headers: Record<string, string> = {
-    'Content-Type': 'application/json',
-  };
-  if (GALLERY_JSON_KEY) {
-    headers['X-Master-Key'] = GALLERY_JSON_KEY;
-    headers['X-Access-Key'] = GALLERY_JSON_KEY;
-    headers['secret-key'] = GALLERY_JSON_KEY;
-  }
-  return headers;
-};
 
 // Helper to read gallery metadata
 async function getGalleryData(): Promise<any[]> {
   try {
     if (GALLERY_JSON_URL) {
+      console.log('Fetching gallery from:', GALLERY_JSON_URL);
       const response = await fetch(GALLERY_JSON_URL, {
-        headers: getHeaders(),
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
         cache: 'no-store',
       });
       if (!response.ok) {
-        throw new Error(`External storage fetch failed: ${response.statusText}`);
+        throw new Error(`External storage fetch failed: ${response.status} ${response.statusText}`);
       }
       const data = await response.json();
-      return data.record || data || [];
+      // Handle JSONBin.io structure where data is wrapped in 'record'
+      const result = Array.isArray(data) ? data : (data.record || data || []);
+      return Array.isArray(result) ? result : [];
     }
 
     // Fallback to local file (dev only)
     const fileContent = await readFile(GALLERY_JSON_PATH, 'utf-8');
     return JSON.parse(fileContent);
-  } catch {
+  } catch (err) {
+    console.error('Error reading gallery data:', err);
     return [];
   }
 }
@@ -58,13 +55,19 @@ async function getGalleryData(): Promise<any[]> {
 async function saveGalleryData(data: any[]): Promise<boolean> {
   try {
     if (GALLERY_JSON_URL) {
-      const method = GALLERY_JSON_URL.includes('npoint.io') ? 'POST' : 'PUT';
+      console.log('Saving gallery to:', GALLERY_JSON_URL, 'items:', data.length);
       const response = await fetch(GALLERY_JSON_URL, {
-        method,
-        headers: getHeaders(),
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
         body: JSON.stringify(data),
       });
-      return response.ok;
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Save failed:', response.status, errorText);
+        return false;
+      }
+      console.log('Gallery saved successfully');
+      return true;
     }
 
     // Fallback to local file (dev only)
@@ -145,7 +148,15 @@ export async function POST(request: Request) {
     // Save metadata to JSON storage
     const gallery = await getGalleryData();
     gallery.unshift(galleryItem);
-    await saveGalleryData(gallery);
+    const saved = await saveGalleryData(gallery);
+
+    if (!saved) {
+      console.error('Failed to save gallery metadata after Cloudinary upload');
+      return NextResponse.json(
+        { success: false, error: 'File uploaded but failed to save metadata' },
+        { status: 500 }
+      );
+    }
 
     console.log('Gallery item uploaded to Cloudinary:', galleryItem.id);
     return NextResponse.json({ success: true, item: galleryItem });
@@ -196,7 +207,15 @@ export async function DELETE(request: Request) {
 
     // Remove from JSON storage
     const updatedGallery = gallery.filter((item: any) => item.id !== id);
-    await saveGalleryData(updatedGallery);
+    const saved = await saveGalleryData(updatedGallery);
+
+    if (!saved) {
+      console.error('Failed to save gallery metadata after delete');
+      return NextResponse.json(
+        { success: false, error: 'Failed to persist deletion' },
+        { status: 500 }
+      );
+    }
 
     console.log('Gallery item deleted:', id);
     return NextResponse.json({ success: true });

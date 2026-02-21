@@ -88,17 +88,56 @@ export default function GalleryPage() {
 
     setIsUploading(true);
     try {
-      const formData = new FormData();
-      formData.append('file', uploadForm.file);
-      formData.append('caption', uploadForm.caption);
-      formData.append('uploadedBy', uploadForm.uploadedBy || 'Anonymous Hunter');
+      const file = uploadForm.file;
+      const isVideo = file.type.startsWith('video/');
+      const resourceType = isVideo ? 'video' : 'image';
 
-      const response = await fetch('/api/gallery', {
+      // Step 1: Get signed upload params from our server
+      const signRes = await fetch('/api/gallery/sign', {
         method: 'POST',
-        body: formData,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ resourceType }),
+      });
+      const signData = await signRes.json();
+
+      if (!signRes.ok) {
+        throw new Error(signData.error || 'Failed to get upload signature');
+      }
+
+      // Step 2: Upload directly from browser to Cloudinary (no server size limit)
+      const cloudFormData = new FormData();
+      cloudFormData.append('file', file);
+      cloudFormData.append('api_key', signData.apiKey);
+      cloudFormData.append('timestamp', String(signData.timestamp));
+      cloudFormData.append('signature', signData.signature);
+      cloudFormData.append('folder', signData.folder);
+
+      const cloudinaryUrl = `https://api.cloudinary.com/v1_1/${signData.cloudName}/${resourceType}/upload`;
+      const cloudRes = await fetch(cloudinaryUrl, {
+        method: 'POST',
+        body: cloudFormData,
       });
 
-      const result = await response.json();
+      const cloudData = await cloudRes.json();
+
+      if (!cloudRes.ok) {
+        throw new Error(cloudData.error?.message || 'Cloudinary upload failed');
+      }
+
+      // Step 3: Save metadata to our JSON storage
+      const metaRes = await fetch('/api/gallery', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          url: cloudData.secure_url,
+          publicId: cloudData.public_id,
+          resourceType,
+          caption: uploadForm.caption,
+          uploadedBy: uploadForm.uploadedBy || 'Anonymous Hunter',
+        }),
+      });
+
+      const result = await metaRes.json();
 
       if (result.success) {
         setGalleryItems(prev => [result.item, ...prev]);

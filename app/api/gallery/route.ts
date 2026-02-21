@@ -90,58 +90,33 @@ export async function GET() {
   }
 }
 
-// POST - Upload file to Cloudinary and save metadata to JSON
+// POST - Save gallery metadata (file already uploaded to Cloudinary from browser)
 export async function POST(request: Request) {
   try {
-    const formData = await request.formData();
-    const file = formData.get('file') as File;
-    const caption = (formData.get('caption') as string) || '';
-    const uploadedBy = (formData.get('uploadedBy') as string) || 'Anonymous Hunter';
+    const body = await request.json();
+    const { url, publicId, resourceType, caption, uploadedBy } = body;
 
-    if (!file) {
+    if (!url || !publicId) {
       return NextResponse.json(
-        { success: false, error: 'No file provided' },
+        { success: false, error: 'Missing url or publicId' },
         { status: 400 }
       );
     }
 
-    const isVideo = file.type.startsWith('video/');
-    const isImage = file.type.startsWith('image/');
-
-    if (!isVideo && !isImage) {
-      return NextResponse.json(
-        { success: false, error: 'Only images and videos are allowed' },
-        { status: 400 }
-      );
-    }
-
-    // Convert file to base64 data URI for Cloudinary upload
-    const bytes = await file.arrayBuffer();
-    const buffer = Buffer.from(bytes);
-    const base64 = buffer.toString('base64');
-    const dataUri = `data:${file.type};base64,${base64}`;
-
+    const isVideo = resourceType === 'video';
     const timestamp = Date.now();
 
-    // Upload to Cloudinary
-    const uploadResult = await cloudinary.uploader.upload(dataUri, {
-      folder: 'goh-gallery',
-      public_id: `${isVideo ? 'vid' : 'img'}_${timestamp}`,
-      resource_type: isVideo ? 'video' : 'image',
-      overwrite: true,
-    });
-
-    // Create gallery item with Cloudinary URL
+    // Create gallery item
     const galleryItem = {
       id: `gallery_${timestamp}`,
       type: isVideo ? 'video' : 'image',
-      path: uploadResult.secure_url,
-      publicId: uploadResult.public_id,
+      path: url,
+      publicId,
       thumbnail: isVideo
-        ? uploadResult.secure_url.replace(/\.[^/.]+$/, '.jpg')
+        ? url.replace(/\.[^/.]+$/, '.jpg')
         : null,
-      caption,
-      uploadedBy,
+      caption: caption || '',
+      uploadedBy: uploadedBy || 'Anonymous Hunter',
       uploadedAt: new Date().toISOString(),
     };
 
@@ -151,19 +126,19 @@ export async function POST(request: Request) {
     const saved = await saveGalleryData(gallery);
 
     if (!saved) {
-      console.error('Failed to save gallery metadata after Cloudinary upload');
+      console.error('Failed to save gallery metadata');
       return NextResponse.json(
-        { success: false, error: 'File uploaded but failed to save metadata' },
+        { success: false, error: 'Failed to save metadata' },
         { status: 500 }
       );
     }
 
-    console.log('Gallery item uploaded to Cloudinary:', galleryItem.id);
+    console.log('Gallery item saved:', galleryItem.id);
     return NextResponse.json({ success: true, item: galleryItem });
   } catch (error) {
-    console.error('Error uploading to gallery:', error);
+    console.error('Error saving gallery item:', error);
     return NextResponse.json(
-      { success: false, error: 'Failed to upload file' },
+      { success: false, error: 'Failed to save gallery item' },
       { status: 500 }
     );
   }

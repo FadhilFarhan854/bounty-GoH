@@ -13,7 +13,10 @@ import {
   Calendar,
   Loader2,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Trash2,
+  Lock,
+  Key
 } from "lucide-react";
 import Image from "next/image";
 import { GalleryItem } from "../types/gallery";
@@ -114,6 +117,60 @@ export default function GalleryPage() {
     if (previewUrl) {
       URL.revokeObjectURL(previewUrl);
       setPreviewUrl(null);
+    }
+  };
+
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleteItemId, setDeleteItemId] = useState<string | null>(null);
+  const [deleteCipher, setDeleteCipher] = useState('');
+  const [cipherError, setCipherError] = useState('');
+  const [isShaking, setIsShaking] = useState(false);
+
+  const handleDeleteClick = (id: string) => {
+    setDeleteItemId(id);
+    setShowDeleteConfirm(true);
+    setDeleteCipher('');
+    setCipherError('');
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (deleteCipher !== 'goh-123') {
+      setCipherError('The ancient seal rejects thee...');
+      setIsShaking(true);
+      setTimeout(() => {
+        setIsShaking(false);
+        setCipherError('');
+      }, 600);
+      return;
+    }
+
+    if (!deleteItemId) return;
+
+    setIsDeleting(true);
+    try {
+      const response = await fetch('/api/gallery', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: deleteItemId }),
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        setGalleryItems(prev => prev.filter(item => item.id !== deleteItemId));
+        setSelectedItem(null);
+        setShowDeleteConfirm(false);
+        setDeleteItemId(null);
+        setDeleteCipher('');
+      } else {
+        alert('Delete failed: ' + result.error);
+      }
+    } catch (error) {
+      console.error('Delete error:', error);
+      alert('Failed to delete item');
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -622,24 +679,158 @@ export default function GalleryPage() {
                     {selectedItem.caption}
                   </p>
                 )}
-                <div className="flex items-center gap-6 text-sm text-muted-foreground">
-                  <span className="flex items-center gap-2">
-                    <User className="w-4 h-4 text-primary/60" />
-                    {selectedItem.uploadedBy}
-                  </span>
-                  <span className="flex items-center gap-2">
-                    <Calendar className="w-4 h-4 text-primary/60" />
-                    {formatDate(selectedItem.uploadedAt)}
-                  </span>
-                  <span className="flex items-center gap-2">
-                    {selectedItem.type === 'video' ? (
-                      <Video className="w-4 h-4 text-primary/60" />
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-6 text-sm text-muted-foreground">
+                    <span className="flex items-center gap-2">
+                      <User className="w-4 h-4 text-primary/60" />
+                      {selectedItem.uploadedBy}
+                    </span>
+                    <span className="flex items-center gap-2">
+                      <Calendar className="w-4 h-4 text-primary/60" />
+                      {formatDate(selectedItem.uploadedAt)}
+                    </span>
+                    <span className="flex items-center gap-2">
+                      {selectedItem.type === 'video' ? (
+                        <Video className="w-4 h-4 text-primary/60" />
+                      ) : (
+                        <ImageIcon className="w-4 h-4 text-primary/60" />
+                      )}
+                      {selectedItem.type === 'video' ? 'Video' : 'Image'}
+                    </span>
+                  </div>
+
+                  {/* Delete button */}
+                  <button
+                    onClick={() => handleDeleteClick(selectedItem.id)}
+                    disabled={isDeleting}
+                    className="flex items-center gap-2 px-4 py-2 rounded-lg bg-destructive/20 border border-destructive/40 text-destructive hover:bg-destructive/30 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                  >
+                    {isDeleting ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
                     ) : (
-                      <ImageIcon className="w-4 h-4 text-primary/60" />
+                      <Trash2 className="w-4 h-4" />
                     )}
-                    {selectedItem.type === 'video' ? 'Video' : 'Image'}
-                  </span>
+                    <span className="text-sm font-cinzel">Delete</span>
+                  </button>
                 </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Delete Confirmation Modal with Cipher */}
+      <AnimatePresence>
+        {showDeleteConfirm && (
+          <motion.div
+            className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => {
+              setShowDeleteConfirm(false);
+              setDeleteItemId(null);
+              setDeleteCipher('');
+            }}
+          >
+            <motion.div
+              className="relative w-full max-w-md bg-gradient-to-b from-card to-background border-2 border-primary/30 rounded-xl p-6 shadow-2xl"
+              initial={{ scale: 0.9, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.9, y: 20 }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Header */}
+              <div className="text-center mb-6">
+                <motion.div
+                  animate={{ rotate: [0, 5, -5, 0] }}
+                  transition={{ duration: 2, repeat: Infinity }}
+                >
+                  <Key className="w-12 h-12 text-destructive mx-auto mb-4" />
+                </motion.div>
+                <h3 className="font-cinzel text-2xl text-parchment mb-2">
+                  The Destruction Seal
+                </h3>
+                <p className="text-sm text-muted-foreground italic">
+                  &quot;Only those with the sacred cipher may erase from the archives...&quot;
+                </p>
+              </div>
+
+              {/* Warning */}
+              <div className="bg-destructive/10 border border-destructive/30 rounded-lg p-4 mb-6">
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  You are about to <span className="text-destructive font-semibold">permanently delete</span> this 
+                  record from the <span className="text-parchment font-semibold">Guild Archives</span>. 
+                  This action cannot be undone.
+                </p>
+              </div>
+
+              {/* Cipher Input */}
+              <div className="mb-6">
+                <label className="block text-sm font-cinzel text-parchment mb-2">
+                  Enter the Cipher
+                </label>
+                <motion.input
+                  type="password"
+                  value={deleteCipher}
+                  onChange={(e) => setDeleteCipher(e.target.value)}
+                  placeholder="Guild cipher..."
+                  className={`w-full px-4 py-3 bg-background/50 border-2 rounded-lg font-cinzel text-parchment placeholder:text-muted-foreground/50 focus:outline-none focus:border-primary/60 transition-colors ${
+                    cipherError ? 'border-destructive' : 'border-primary/30'
+                  }`}
+                  animate={isShaking ? { x: [-10, 10, -10, 10, 0] } : {}}
+                  transition={{ duration: 0.4 }}
+                  autoFocus
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      handleDeleteConfirm();
+                    }
+                  }}
+                />
+                <AnimatePresence>
+                  {cipherError && (
+                    <motion.p
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0 }}
+                      className="text-destructive text-sm mt-2 flex items-center gap-2"
+                    >
+                      <Lock className="w-4 h-4" />
+                      {cipherError}
+                    </motion.p>
+                  )}
+                </AnimatePresence>
+              </div>
+
+              {/* Buttons */}
+              <div className="flex gap-3">
+                <button
+                  onClick={() => {
+                    setShowDeleteConfirm(false);
+                    setDeleteItemId(null);
+                    setDeleteCipher('');
+                  }}
+                  className="flex-1 py-3 bg-muted/30 border border-primary/20 rounded-lg font-cinzel text-muted-foreground hover:bg-muted/50 transition-all"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleDeleteConfirm}
+                  disabled={isDeleting || !deleteCipher}
+                  className="flex-1 py-3 bg-destructive/20 border border-destructive/40 rounded-lg font-cinzel text-destructive hover:bg-destructive/30 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
+                >
+                  {isDeleting ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <span>Deleting...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Trash2 className="w-4 h-4" />
+                      <span>Delete</span>
+                    </>
+                  )}
+                </button>
               </div>
             </motion.div>
           </motion.div>

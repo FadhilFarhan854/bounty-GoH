@@ -6,12 +6,42 @@ import path from 'path';
 // Force dynamic to enable file system operations
 export const dynamic = 'force-dynamic';
 
+// External JSON storage for gallery metadata
+const GALLERY_JSON_URL = process.env.GALLERY_JSON_URL;
+const GALLERY_JSON_KEY = process.env.GALLERY_JSON_KEY;
+
 const GALLERY_JSON_PATH = path.join(process.cwd(), 'app', 'data', 'gallery.json');
 const UPLOADS_DIR = path.join(process.cwd(), 'public', 'uploads', 'gallery');
+
+// Helper to get headers for external request
+const getHeaders = () => {
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+  };
+  if (GALLERY_JSON_KEY) {
+    headers['X-Master-Key'] = GALLERY_JSON_KEY;
+    headers['X-Access-Key'] = GALLERY_JSON_KEY;
+    headers['secret-key'] = GALLERY_JSON_KEY;
+  }
+  return headers;
+};
 
 // Helper to read gallery data
 async function getGalleryData(): Promise<any[]> {
   try {
+    if (GALLERY_JSON_URL) {
+      const response = await fetch(GALLERY_JSON_URL, {
+        headers: getHeaders(),
+        cache: 'no-store'
+      });
+      if (!response.ok) {
+        throw new Error(`External storage fetch failed: ${response.statusText}`);
+      }
+      const data = await response.json();
+      return data.record || data || [];
+    }
+
+    // Fallback to local file
     const fileContent = await readFile(GALLERY_JSON_PATH, 'utf-8');
     return JSON.parse(fileContent);
   } catch {
@@ -20,8 +50,25 @@ async function getGalleryData(): Promise<any[]> {
 }
 
 // Helper to save gallery data
-async function saveGalleryData(data: any[]): Promise<void> {
-  await writeFile(GALLERY_JSON_PATH, JSON.stringify(data, null, 2));
+async function saveGalleryData(data: any[]): Promise<boolean> {
+  try {
+    if (GALLERY_JSON_URL) {
+      const method = GALLERY_JSON_URL.includes('npoint.io') ? 'POST' : 'PUT';
+      const response = await fetch(GALLERY_JSON_URL, {
+        method,
+        headers: getHeaders(),
+        body: JSON.stringify(data)
+      });
+      return response.ok;
+    }
+
+    // Fallback to local file
+    await writeFile(GALLERY_JSON_PATH, JSON.stringify(data, null, 2));
+    return true;
+  } catch (error) {
+    console.error('Error saving gallery data:', error);
+    return false;
+  }
 }
 
 // GET - Fetch all gallery items

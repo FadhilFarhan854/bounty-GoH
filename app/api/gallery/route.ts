@@ -35,15 +35,33 @@ async function getGalleryData(): Promise<any[]> {
         },
         cache: 'no-store',
       });
+      
       if (!response.ok) {
+        console.error('Npoint fetch failed:', {
+          status: response.status,
+          statusText: response.statusText,
+          url: GALLERY_JSON_URL
+        });
         throw new Error(`Npoint fetch failed: ${response.status} ${response.statusText}`);
       }
+      
+      const contentType = response.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        const text = await response.text();
+        console.error('Response is not JSON:', {
+          contentType,
+          responsePreview: text.substring(0, 200)
+        });
+        throw new Error('Invalid response format from npoint (not JSON)');
+      }
+      
       const data = await response.json();
       console.log('Gallery fetched from npoint:', Array.isArray(data) ? data.length : 0, 'items');
       return Array.isArray(data) ? data : [];
     }
 
     // Fallback to local file (dev only)
+    console.log('Using local gallery file');
     const fileContent = await readFile(GALLERY_JSON_PATH, 'utf-8');
     return JSON.parse(fileContent);
   } catch (err) {
@@ -57,6 +75,8 @@ async function saveGalleryData(data: any[]): Promise<boolean> {
   try {
     if (GALLERY_JSON_URL) {
       console.log('Saving gallery to npoint:', GALLERY_JSON_URL, 'items:', data.length);
+      
+      // npoint.io always uses POST for updates
       const response = await fetch(GALLERY_JSON_URL, {
         method: 'POST',
         headers: { 
@@ -64,17 +84,32 @@ async function saveGalleryData(data: any[]): Promise<boolean> {
         },
         body: JSON.stringify(data),
       });
+      
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('Npoint save failed:', response.status, errorText);
+        console.error('Npoint save failed:', {
+          status: response.status,
+          statusText: response.statusText,
+          url: GALLERY_JSON_URL,
+          error: errorText.substring(0, 500) // Limit error text
+        });
         return false;
       }
-      console.log('Gallery saved successfully to npoint');
+      
+      // Try to parse response to verify it's valid JSON
+      try {
+        const result = await response.json();
+        console.log('Gallery saved successfully to npoint:', result);
+      } catch (parseError) {
+        console.warn('Response saved but could not parse JSON:', parseError);
+      }
+      
       return true;
     }
 
     // Fallback to local file (dev only)
     await writeFile(GALLERY_JSON_PATH, JSON.stringify(data, null, 2));
+    console.log('Gallery saved to local file');
     return true;
   } catch (error) {
     console.error('Error saving gallery data:', error);

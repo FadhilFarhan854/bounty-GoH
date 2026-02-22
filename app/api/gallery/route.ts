@@ -20,7 +20,7 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-// External JSON storage for gallery metadata
+// External JSON storage for gallery metadata (npoint)
 const GALLERY_JSON_URL = process.env.GALLERY_JSON_URL;
 const GALLERY_JSON_PATH = path.join(process.cwd(), 'app', 'data', 'gallery.json');
 
@@ -28,18 +28,19 @@ const GALLERY_JSON_PATH = path.join(process.cwd(), 'app', 'data', 'gallery.json'
 async function getGalleryData(): Promise<any[]> {
   try {
     if (GALLERY_JSON_URL) {
-      console.log('Fetching gallery from:', GALLERY_JSON_URL);
+      console.log('Fetching gallery from npoint:', GALLERY_JSON_URL);
       const response = await fetch(GALLERY_JSON_URL, {
-        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+        },
         cache: 'no-store',
       });
       if (!response.ok) {
-        throw new Error(`External storage fetch failed: ${response.status} ${response.statusText}`);
+        throw new Error(`Npoint fetch failed: ${response.status} ${response.statusText}`);
       }
       const data = await response.json();
-      // Handle JSONBin.io structure where data is wrapped in 'record'
-      const result = Array.isArray(data) ? data : (data.record || data || []);
-      return Array.isArray(result) ? result : [];
+      console.log('Gallery fetched from npoint:', Array.isArray(data) ? data.length : 0, 'items');
+      return Array.isArray(data) ? data : [];
     }
 
     // Fallback to local file (dev only)
@@ -55,18 +56,20 @@ async function getGalleryData(): Promise<any[]> {
 async function saveGalleryData(data: any[]): Promise<boolean> {
   try {
     if (GALLERY_JSON_URL) {
-      console.log('Saving gallery to:', GALLERY_JSON_URL, 'items:', data.length);
+      console.log('Saving gallery to npoint:', GALLERY_JSON_URL, 'items:', data.length);
       const response = await fetch(GALLERY_JSON_URL, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify(data),
       });
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('Save failed:', response.status, errorText);
+        console.error('Npoint save failed:', response.status, errorText);
         return false;
       }
-      console.log('Gallery saved successfully');
+      console.log('Gallery saved successfully to npoint');
       return true;
     }
 

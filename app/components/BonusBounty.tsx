@@ -30,23 +30,6 @@ export function BonusBounty() {
             <span className="text-primary font-semibold">Dewan Guild</span> telah menetapkan aturan bonus untuk para pemburu yang berani menghadapi bounty:
           </p>
 
-          {/* General Rule */}
-          <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-4">
-            <div className="flex items-center gap-3 mb-2">
-              <AlertTriangle className="w-5 h-5 text-yellow-500" />
-              <h4 className="font-cinzel text-lg text-parchment">Syarat Umum</h4>
-            </div>
-            <p className="text-sm">
-              Semua bonus bounty hanya berlaku untuk boss dengan difficulty <span className="text-primary font-bold">Ultimate</span>.
-            </p>
-            <p className="text-sm">
-             
-            </p>
-            <p className="text-xs italic mt-2 text-muted-foreground">
-               Bounty akan dibagikan setiap <span className="text-primary font-bold">Malam minggu</span> di <span className="text-primary font-bold">Guild Bar</span>.
-            </p>
-          </div>
-
           {/* Solo Bonus */}
           <div className="bg-primary/10 border border-primary/30 rounded-lg p-4">
             <div className="flex items-center gap-3 mb-2">
@@ -57,10 +40,6 @@ export function BonusBounty() {
               Pemburu yang berani menghadapi beast sendirian akan menerima 
               <span className="text-primary font-bold"> bonus 15%</span> dari total hadiah bounty.
             </p>
-            <div className="mt-3 text-xs">
-              <p className="text-yellow-500 font-semibold">⚔️ Syarat Solo:</p>
-              <p className="ml-2 mt-1">Maksimal <span className="text-primary font-bold">1x per orang</span></p>
-            </div>
             <p className="text-xs italic mt-2 text-muted-foreground">
               &quot;Keberanian sejati terlihat saat engkau berdiri sendiri menghadapi kegelapan...&quot;
             </p>

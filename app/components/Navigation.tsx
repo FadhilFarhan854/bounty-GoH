@@ -12,7 +12,8 @@ import {
   Scroll,
   Shield,
   Volume2,
-  VolumeX
+  VolumeX,
+  Swords
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useMusic } from "./MusicProvider";
@@ -27,6 +28,11 @@ const navItems = [
     label: "Remembrance",
     href: "/gallery",
     icon: Images,
+  },
+  {
+    label: "Spirit Companion(Beta)",
+    href: "/combat",
+    icon: Swords,
   },
 ];
 

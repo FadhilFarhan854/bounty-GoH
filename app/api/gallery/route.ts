@@ -20,7 +20,7 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-// External JSON storage for gallery metadata
+// External JSON storage for gallery metadata (npoint)
 const GALLERY_JSON_URL = process.env.GALLERY_JSON_URL;
 const GALLERY_JSON_PATH = path.join(process.cwd(), 'app', 'data', 'gallery.json');
 
@@ -28,21 +28,40 @@ const GALLERY_JSON_PATH = path.join(process.cwd(), 'app', 'data', 'gallery.json'
 async function getGalleryData(): Promise<any[]> {
   try {
     if (GALLERY_JSON_URL) {
-      console.log('Fetching gallery from:', GALLERY_JSON_URL);
+      console.log('Fetching gallery from npoint:', GALLERY_JSON_URL);
       const response = await fetch(GALLERY_JSON_URL, {
-        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+        },
         cache: 'no-store',
       });
+      
       if (!response.ok) {
-        throw new Error(`External storage fetch failed: ${response.status} ${response.statusText}`);
+        console.error('Npoint fetch failed:', {
+          status: response.status,
+          statusText: response.statusText,
+          url: GALLERY_JSON_URL
+        });
+        throw new Error(`Npoint fetch failed: ${response.status} ${response.statusText}`);
       }
+      
+      const contentType = response.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        const text = await response.text();
+        console.error('Response is not JSON:', {
+          contentType,
+          responsePreview: text.substring(0, 200)
+        });
+        throw new Error('Invalid response format from npoint (not JSON)');
+      }
+      
       const data = await response.json();
-      // Handle JSONBin.io structure where data is wrapped in 'record'
-      const result = Array.isArray(data) ? data : (data.record || data || []);
-      return Array.isArray(result) ? result : [];
+      console.log('Gallery fetched from npoint:', Array.isArray(data) ? data.length : 0, 'items');
+      return Array.isArray(data) ? data : [];
     }
 
     // Fallback to local file (dev only)
+    console.log('Using local gallery file');
     const fileContent = await readFile(GALLERY_JSON_PATH, 'utf-8');
     return JSON.parse(fileContent);
   } catch (err) {
@@ -55,23 +74,42 @@ async function getGalleryData(): Promise<any[]> {
 async function saveGalleryData(data: any[]): Promise<boolean> {
   try {
     if (GALLERY_JSON_URL) {
-      console.log('Saving gallery to:', GALLERY_JSON_URL, 'items:', data.length);
+      console.log('Saving gallery to npoint:', GALLERY_JSON_URL, 'items:', data.length);
+      
+      // npoint.io always uses POST for updates
       const response = await fetch(GALLERY_JSON_URL, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify(data),
       });
+      
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('Save failed:', response.status, errorText);
+        console.error('Npoint save failed:', {
+          status: response.status,
+          statusText: response.statusText,
+          url: GALLERY_JSON_URL,
+          error: errorText.substring(0, 500) // Limit error text
+        });
         return false;
       }
-      console.log('Gallery saved successfully');
+      
+      // Try to parse response to verify it's valid JSON
+      try {
+        const result = await response.json();
+        console.log('Gallery saved successfully to npoint:', result);
+      } catch (parseError) {
+        console.warn('Response saved but could not parse JSON:', parseError);
+      }
+      
       return true;
     }
 
     // Fallback to local file (dev only)
     await writeFile(GALLERY_JSON_PATH, JSON.stringify(data, null, 2));
+    console.log('Gallery saved to local file');
     return true;
   } catch (error) {
     console.error('Error saving gallery data:', error);

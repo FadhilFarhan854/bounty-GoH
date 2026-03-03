@@ -87,6 +87,41 @@ export default function Home() {
   };
 
 
+  const handleBossPaid = async (bossId: string) => {
+    try {
+      console.log(`Marking boss ${bossId} as paid`);
+      
+      const response = await fetch('/api/bounties', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          bossId,
+          isPaid: true
+        })
+      });
+
+      const result = await response.json();
+      
+      if (result.success) {
+        console.log('Boss marked as paid successfully');
+        
+        setActiveBounties(prev => 
+          prev.map(boss => 
+            boss.id === bossId 
+              ? { ...boss, isPaid: true }
+              : boss
+          )
+        );
+      } else {
+        console.error('Failed to mark boss as paid:', result.error);
+      }
+    } catch (error) {
+      console.error('Error marking boss as paid:', error);
+    }
+  };
+
   return (
     <div className="relative min-h-screen overflow-hidden">
       {/* Intro Screen */}
@@ -148,6 +183,7 @@ export default function Home() {
             <ActiveBountiesCarousel 
               bosses={activeBounties} 
               onBossHunted={handleBossHunted}
+              onBossPaid={handleBossPaid}
             />
           )}
 

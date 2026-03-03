@@ -102,7 +102,7 @@ export async function POST(request: Request) {
 
 export async function PATCH(request: Request) {
   try {
-    const { bossId, hunted, huntedBy, huntedAt } = await request.json();
+    const { bossId, hunted, huntedBy, huntedAt, isPaid } = await request.json();
 
     let bounties: any[] = [];
 
@@ -127,11 +127,16 @@ export async function PATCH(request: Request) {
       return NextResponse.json({ success: false, error: 'Boss not found' }, { status: 404 });
     }
 
+    // Only update fields that are explicitly provided
+    const updatedFields: Record<string, unknown> = {};
+    if (hunted !== undefined) updatedFields.hunted = hunted;
+    if (huntedBy !== undefined) updatedFields.huntedBy = huntedBy;
+    if (huntedAt !== undefined) updatedFields.huntedAt = huntedAt;
+    if (isPaid !== undefined) updatedFields.isPaid = isPaid;
+
     bounties[bossIndex] = {
       ...bounties[bossIndex],
-      hunted,
-      huntedBy,
-      huntedAt
+      ...updatedFields
     };
 
     // 3. Save back

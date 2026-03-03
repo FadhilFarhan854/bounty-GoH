@@ -9,4 +9,5 @@ export interface Boss {
     hunted?: boolean;
     huntedBy?: string;
     huntedAt?: string;
+    isPaid?: boolean;
 }

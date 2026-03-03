@@ -1,7 +1,7 @@
 "use client";
 import { motion, AnimatePresence, PanInfo } from "framer-motion";
 import { useState, useEffect } from "react";
-import { ChevronLeft, ChevronRight, Target, Swords, Trophy, Sword } from "lucide-react";
+import { ChevronLeft, ChevronRight, Target, Swords, Trophy, Sword, Coins, Check } from "lucide-react";
 import { Boss } from "../types/boss";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
@@ -10,9 +10,10 @@ import { HuntedDialog } from "./HuntedDialog";
 interface ActiveBountiesCarouselProps {
   bosses: Boss[];
   onBossHunted?: (bossId: string, huntedBy: string, huntedAt: string) => void;
+  onBossPaid?: (bossId: string) => void;
 }
 
-export function ActiveBountiesCarousel({ bosses, onBossHunted }: ActiveBountiesCarouselProps) {
+export function ActiveBountiesCarousel({ bosses, onBossHunted, onBossPaid }: ActiveBountiesCarouselProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [direction, setDirection] = useState(0);
   const [showHuntedDialog, setShowHuntedDialog] = useState(false);
@@ -262,6 +263,24 @@ export function ActiveBountiesCarousel({ bosses, onBossHunted }: ActiveBountiesC
                       <Sword className="w-4 h-4 group-hover:scale-110 transition-transform" />
                       <span className="text-sm font-semibold">Mark as Hunted</span>
                     </button>
+                  )}
+
+                  {/* Has Paid Button - Only shown when boss is hunted */}
+                  {currentBoss.hunted && (
+                    currentBoss.isPaid ? (
+                      <div className="mt-3 w-full bg-emerald-900/30 border border-emerald-700/50 text-emerald-200 px-4 py-2 rounded flex items-center justify-center gap-2">
+                        <Check className="w-4 h-4" />
+                        <span className="text-sm font-semibold">Bounty Paid</span>
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => onBossPaid?.(currentBoss.id)}
+                        className="mt-3 w-full bg-amber-900/30 hover:bg-amber-800/40 border border-amber-700/50 text-amber-200 px-4 py-2 rounded transition-colors flex items-center justify-center gap-2 group"
+                      >
+                        <Coins className="w-4 h-4 group-hover:scale-110 transition-transform" />
+                        <span className="text-sm font-semibold">Mark as Paid</span>
+                      </button>
+                    )
                   )}
                 </div>
               </div>

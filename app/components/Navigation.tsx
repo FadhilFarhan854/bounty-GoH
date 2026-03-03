@@ -29,11 +29,6 @@ const navItems = [
     href: "/gallery",
     icon: Images,
   },
-  {
-    label: "Spirit Companion(Beta)",
-    href: "/combat",
-    icon: Swords,
-  },
 ];
 
 export function Navigation() {

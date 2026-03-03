@@ -134,57 +134,47 @@ export function BossRandomizer({ onBountiesSelected, activeBounties = [] }: Boss
         )}
 
         <AnimatePresence mode="wait">
-          {/* Idle State - Show only 5 card backs */}
+          {/* Idle State - desktop + mobile wrapped as one child */}
           {phase === "idle" && (
             <motion.div
               key="idle"
-              className="hidden md:flex justify-center items-center gap-4 flex-wrap"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0, scale: 0.9 }}
               transition={{ duration: 0.5 }}
             >
-              {displayBosses.map((_, index) => (
-                <div key={index} className="transform hover:scale-105 transition-transform">
-                  <CardBack delay={index * 0.1} />
-                </div>
-              ))}
-            </motion.div>
-          )}
+              {/* Desktop: row of card backs */}
+              <div className="hidden md:flex justify-center items-center gap-4 flex-wrap">
+                {displayBosses.map((_, index) => (
+                  <div key={index} className="transform hover:scale-105 transition-transform">
+                    <CardBack delay={index * 0.1} />
+                  </div>
+                ))}
+              </div>
 
-          {/* Idle State - Mobile Stacked Cards */}
-          {phase === "idle" && (
-            <motion.div
-              key="idle-mobile"
-              className="md:hidden relative w-[200px] h-[320px]"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0, scale: 0.9 }}
-              transition={{ duration: 0.5 }}
-            >
-              {displayBosses.map((_, index) => (
-                <motion.div
-                  key={index}
-                  className="absolute top-0 left-1/2 -translate-x-1/2"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{
-                    opacity: 1,
-                    y: 0,
-                    rotate: (index - 2) * 5,
-                    x: (index - 2) * 8,
-                    scale: 0.7
-                  }}
-                  transition={{
-                    delay: index * 0.1,
-                    duration: 0.5
-                  }}
-                  style={{
-                    zIndex: index
-                  }}
-                >
-                  <CardBack delay={0} />
-                </motion.div>
-              ))}
+              {/* Mobile: stacked cards */}
+              <div className="md:hidden flex justify-center">
+                <div className="relative w-[200px] h-[320px]">
+                  {displayBosses.map((_, index) => (
+                    <motion.div
+                      key={index}
+                      className="absolute top-0 left-1/2 -translate-x-1/2"
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{
+                        opacity: 1,
+                        y: 0,
+                        rotate: (index - 2) * 5,
+                        x: (index - 2) * 8,
+                        scale: 0.7
+                      }}
+                      transition={{ delay: index * 0.1, duration: 0.5 }}
+                      style={{ zIndex: index }}
+                    >
+                      <CardBack delay={0} />
+                    </motion.div>
+                  ))}
+                </div>
+              </div>
             </motion.div>
           )}
 
@@ -239,43 +229,41 @@ export function BossRandomizer({ onBountiesSelected, activeBounties = [] }: Boss
             </motion.div>
           )}
 
-          {/* Revealing / Selected State - Desktop: Show 5 cards in a row */}
+          {/* Revealing / Selected State - desktop + mobile wrapped as one child */}
           {(phase === "revealing" || phase === "selected") && selectedBosses.length > 0 && (
             <motion.div
               key="selected"
-              className="hidden md:flex flex-wrap justify-center items-center gap-4 relative z-10"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
               transition={{ duration: 0.5 }}
             >
-              {selectedBosses.map((boss, index) => (
-                <motion.div
-                  key={boss.id}
-                  initial={{ opacity: 0, scale: 0.8, rotateY: 180 }}
-                  animate={{ opacity: 1, scale: 1, rotateY: 0 }}
-                  transition={{
-                    delay: index * 0.2,
-                    duration: 0.6
-                  }}
-                >
-                  <BossCard
-                    boss={boss}
-                    isSelected={phase === "selected"}
-                    isRevealed={true}
-                  />
-                </motion.div>
-              ))}
-            </motion.div>
-          )}
+              {/* Desktop: row of boss cards */}
+              <div className="hidden md:flex flex-wrap justify-center items-center gap-4 relative z-10">
+                {selectedBosses.map((boss, index) => (
+                  <motion.div
+                    key={boss.id}
+                    initial={{ opacity: 0, scale: 0.8, rotateY: 180 }}
+                    animate={{ opacity: 1, scale: 1, rotateY: 0 }}
+                    transition={{ delay: index * 0.2, duration: 0.6 }}
+                  >
+                    <BossCard
+                      boss={boss}
+                      isSelected={phase === "selected"}
+                      isRevealed={true}
+                    />
+                  </motion.div>
+                ))}
+              </div>
 
-          {/* Revealing / Selected State - Mobile: Stacked Cards */}
-          {(phase === "revealing" || phase === "selected") && selectedBosses.length > 0 && (
-            <div className="md:hidden relative z-10">
-              <StackedCards
-                bosses={selectedBosses}
-                isSelected={phase === "selected"}
-              />
-            </div>
+              {/* Mobile: stacked cards */}
+              <div className="md:hidden relative z-10">
+                <StackedCards
+                  bosses={selectedBosses}
+                  isSelected={phase === "selected"}
+                />
+              </div>
+            </motion.div>
           )}
         </AnimatePresence>
       </div>

@@ -61,6 +61,23 @@
   --animate-slow-pulse: slow-pulse 4s ease-in-out infinite;
   --animate-fate-glow: fate-glow 2s ease-in-out infinite alternate;
 
+  @keyframes ambient-rise {
+    0% {
+      transform: translateY(0) translateX(0) scale(1);
+      opacity: var(--tw-opacity, 0.12);
+    }
+    40% {
+      opacity: var(--tw-opacity, 0.12);
+    }
+    80% {
+      opacity: 0;
+    }
+    100% {
+      transform: translateY(-100vh) translateX(var(--drift, 0px)) scale(0.4);
+      opacity: 0;
+    }
+  }
+
   @keyframes shimmer {
 
     0%,
@@ -103,6 +120,12 @@
 }
 
 /* Medieval Fantasy RPG Design System */
+
+@media (prefers-reduced-motion: reduce) {
+  .ambient-particles {
+    display: none;
+  }
+}
 
 @layer base {
   :root {

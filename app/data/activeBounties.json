@@ -1,26 +1,66 @@
 [
   {
-    "id": "oculasignia",
-    "name": "Oculasignia",
-    "image": "/assetw/oculasignia.webp",
-    "bounty": "4,800,000 Spina",
-    "description": "The all-seeing eye of the void. Nothing escapes its gaze, and no secret remains hidden.",
+    "id": "guard-golem",
+    "name": "Guard Golem",
+    "image": "/assetw/Guard-Golem.webp",
+    "bounty": "7,800,000 Spina",
+    "description": "An ancient sentinel awakened from eternal slumber. It knows no mercy, only duty.",
     "hunted": false
   },
   {
-    "id": "rudis",
-    "name": "Rudis",
-    "image": "/assetw/Rudis.webp",
-    "bounty": "2,500,000 Spina",
-    "description": "The brutal gladiator champion. Countless warriors have fallen to his blade.",
+    "id": "mulgoon",
+    "name": "Mulgoon",
+    "image": "/assetw/Mulgoon.webp",
+    "bounty": "7,000,000 Spina",
+    "description": "A savage beast king. His roar alone can shatter steel and break spirits.",
     "hunted": false
   },
   {
-    "id": "merzehal",
-    "name": "Merzehal",
-    "image": "/assetw/Merzehal.webp",
-    "bounty": "7,700,000 Spina",
-    "description": "The Ancient Dragon who has lived for millennia. His wisdom is matched only by his devastating power.",
+    "id": "igneus",
+    "name": "Igneus",
+    "image": "/assetw/Igneus.webp",
+    "bounty": "2,300,000 Spina",
+    "description": "The Flame General who commands the volcanic legions. His anger burns eternal.",
+    "hunted": false
+  },
+  {
+    "id": "gemma",
+    "name": "Gemma",
+    "image": "/assetw/Gemma.webp",
+    "bounty": "2,400,000 Spina",
+    "description": "The crystal guardian whose body reflects a thousand deadly lights. Her beauty is mesmerizing and lethal.",
+    "hunted": false
+  },
+  {
+    "id": "finstern",
+    "name": "Finstern",
+    "image": "/assetw/finstern.webp",
+    "bounty": "2,000,000 Spina",
+    "description": " The Dragon of the abyss. It devours light and leaves only darkness in its wake.",
+    "hunted": false
+  },
+  {
+    "id": "pisteus",
+    "name": "Pisteus",
+    "image": "/assetw/pisteus.webp",
+    "bounty": "2,300,000 Spina",
+    "description": "A faithful guardian corrupted by dark magic. He now protects the very evil he once fought against.",
+    "hunted": false
+  },
+  {
+    "id": "castilia",
+    "name": "Castilia",
+    "image": "/assetw/Castila.webp",
+    "bounty": "7,200,000 Spina",
+    "description": "The Artificial Spirit created by the researchers. Her power rivals that of ancient gods.",
+    "hunted": false
+  },
+  {
+    "id": "hexter",
+    "name": "Hexter",
+    "image": "/assetw/hexter.webp",
+    "bounty": "5,200,000 Spina",
+    "description": "A sinister being that wields dark curses. Those who face it often lose their minds before their lives.",
     "hunted": false
   },
   {
@@ -32,53 +72,11 @@
     "hunted": false
   },
   {
-    "id": "black-shadow",
-    "name": "Black Shadow",
-    "image": "/assetw/Black_shadow.webp",
-    "bounty": "2,200,000 Spina",
-    "description": "The embodiment of darkness itself. It exists in the space between light and void.",
+    "id": "eto",
+    "name": "Etoise",
+    "image": "/assetw/Eto.webp",
+    "bounty": "7,500,000 Spina",
+    "description": "The Shadow Assassin who moves unseen. No one has ever witnessed her true form.",
     "hunted": false
-  },
-  {
-    "id": "reliza",
-    "name": "Reliza",
-    "image": "/assetw/Reliza.webp",
-    "bounty": "7,000,000 Spina",
-    "description": "The frost maiden who brings eternal winter. Her heart is colder than the ice she commands.",
-    "hunted": false
-  },
-  {
-    "id": "ferzen",
-    "name": "Ferzen",
-    "image": "/assetw/Ferzen.webp",
-    "bounty": "2,200,000 Spina",
-    "description": "The Ice Lord whose frozen domain knows no mercy. His cold heart matches his frozen powers.",
-    "hunted": false
-  },
-  {
-    "id": "filrocas",
-    "name": "Filrocas",
-    "image": "/assetw/Filrocas.webp",
-    "bounty": "4,500,000 Spina",
-    "description": "The plague doctor who spreads pestilence. His touch brings disease and despair.",
-    "hunted": false
-  },
-  {
-    "id": "kuzto",
-    "name": "Kuzto",
-    "image": "/assetw/kuzto.webp",
-    "bounty": "2,000,000 Spina",
-    "description": "The keeper of the labyrinth. He traps wanderers in endless mazes of despair.",
-    "hunted": false
-  },
-  {
-    "id": "gravicep",
-    "name": "Gravicep",
-    "image": "/assetw/Gravicep.webp",
-    "bounty": "4,500,000 Spina",
-    "description": "A monstrous entity with gravity-defying strength. Its crushing blows can flatten mountains.",
-    "hunted": true,
-    "huntedBy": "Klepon",
-    "huntedAt": "2026-02-07T16:35:00.945Z"
   }
 ]

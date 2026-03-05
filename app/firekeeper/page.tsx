@@ -365,13 +365,18 @@ export default function FirekeeperPage() {
           backgroundImage: "url('/assets/bg-story.webp')",
         }}
       />
-      {/* Background Image - Mobile */}
-      <div
-        className="md:hidden fixed inset-0 bg-cover bg-center bg-no-repeat"
-        style={{
-          backgroundImage: "url('/assets/bg-story-mobile.webp')",
-        }}
-      />
+      {/* Background Video - Mobile */}
+      <div className="md:hidden fixed inset-0">
+        <video
+          autoPlay
+          loop
+          muted
+          playsInline
+          className="absolute inset-0 w-full h-full object-cover"
+        >
+          <source src="/assets/vid-bg-mobile.mp4" type="video/mp4" />
+        </video>
+      </div>
 
       {/* Dark overlay for better readability */}
       <div className="fixed inset-0 bg-gradient-to-r from-black/30 via-transparent to-black/60" />

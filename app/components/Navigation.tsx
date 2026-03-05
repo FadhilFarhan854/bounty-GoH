@@ -13,7 +13,8 @@ import {
   Shield,
   Volume2,
   VolumeX,
-  Swords
+  Swords,
+  Flame
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useMusic } from "./MusicProvider";
@@ -23,6 +24,11 @@ const navItems = [
     label: "Bounty Board",
     href: "/",
     icon: Home,
+  },
+  {
+    label: "Fate Maiden",
+    href: "/firekeeper",
+    icon: Flame,
   },
   {
     label: "Remembrance",
@@ -37,7 +43,7 @@ export function Navigation() {
   const { isMuted, isLoaded, toggleMute } = useMusic();
 
   return (
-    <>
+    <div data-nav="main">
       {/* Desktop Navigation - Fixed Top */}
       <motion.nav
         className="hidden md:block fixed top-0 left-0 right-0 z-50 bg-gradient-to-b from-background/95 to-background/80 backdrop-blur-md border-b border-primary/20"
@@ -260,6 +266,6 @@ export function Navigation() {
 
       {/* Spacer for desktop nav */}
       <div className="hidden md:block h-16" />
-    </>
+    </div>
   );
 }

@@ -208,6 +208,10 @@
     min-height: 100vh;
   }
 
+  body.no-pulse {
+    animation: none;
+  }
+
   h1,
   h2,
   h3,
@@ -387,5 +391,32 @@
 
   .rotate-y-180 {
     transform: rotateY(180deg);
+  }
+
+  /* Custom scrollbar for chat */
+  .scrollbar-thin {
+    scrollbar-width: thin;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: hsl(var(--background) / 0.3);
+    border-radius: 3px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background: hsl(var(--primary) / 0.3);
+    border-radius: 3px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--primary) / 0.5);
+  }
+
+  .scrollbar-thumb-amber-900\/50::-webkit-scrollbar-thumb {
+    background: hsl(25 80% 20% / 0.5);
   }
 }

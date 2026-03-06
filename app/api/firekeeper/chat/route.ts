@@ -251,7 +251,7 @@ export async function POST(request: NextRequest) {
 
     // ── 8. Call LLM
     const completion = await openai.chat.completions.create({
-      model: "gpt-4o-mini-2024-07-18",
+      model: "gpt-4",
       messages: [
         { role: "system", content: systemPrompt },
         ...messages,

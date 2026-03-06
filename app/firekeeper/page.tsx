@@ -83,6 +83,7 @@ export default function FirekeeperPage() {
           messages: [],
           currentQuest: null,
           selectedBossId: null,
+          playerName: "Pengembara",
         }),
       });
 
@@ -93,6 +94,11 @@ export default function FirekeeperPage() {
       // Lock the boss from first response
       if (data.selectedBossId) {
         setSelectedBossId(data.selectedBossId);
+      }
+
+      // Update player name if AI detected it
+      if (data.detectedName) {
+        setPlayerName(data.detectedName);
       }
       
       const npcResponse: ChatMessage = {
@@ -237,12 +243,18 @@ export default function FirekeeperPage() {
           ],
           currentQuest: { ...currentQuest, status: "completed" },
           selectedBossId,
+          playerName,
         }),
       });
 
       if (!response.ok) throw new Error("Failed to get response");
 
       const data = await response.json();
+
+      // Update name if AI detected it
+      if (data.detectedName) {
+        setPlayerName(data.detectedName);
+      }
       
       const npcResponse: ChatMessage = {
         id: `npc-${Date.now()}`,
@@ -252,7 +264,7 @@ export default function FirekeeperPage() {
       };
 
       setMessages((prev) => [...prev, npcResponse]);
-      setConversationEnded(true);
+      // Don't auto-end — let user continue talking after quest completion
 
     } catch (error) {
       console.error("Completion message error:", error);
@@ -275,11 +287,13 @@ export default function FirekeeperPage() {
     setInputValue("");
     setIsLoading(true);
 
-    // Capture player name from first or second user message
+    // Capture player name from first user message
     const userMsgCount = messages.filter(m => m.role === "user").length;
+    let effectiveName = playerName;
     if (userMsgCount === 0) {
-      // This is the first user message — likely their name
-      setPlayerName(inputValue.trim());
+      // First user message — likely their name
+      effectiveName = inputValue.trim();
+      setPlayerName(effectiveName);
     }
 
     try {
@@ -295,12 +309,18 @@ export default function FirekeeperPage() {
           messages: history,
           currentQuest,
           selectedBossId,
+          playerName: effectiveName,
         }),
       });
 
       if (!response.ok) throw new Error("Failed to get response");
 
       const data = await response.json();
+
+      // Update name if AI detected a proper name
+      if (data.detectedName) {
+        setPlayerName(data.detectedName);
+      }
 
       // Keep boss locked
       if (data.selectedBossId && !selectedBossId) {
@@ -326,13 +346,11 @@ export default function FirekeeperPage() {
         setCurrentQuest({ ...data.quest, status: "accepted" });
       }
 
-      // Quest rejected -> end conversation
-      if (data.questRejected) {
-        setConversationEnded(true);
-      }
+      // Quest rejected -> conversation continues (user can still talk)
+      // Quest completed -> conversation continues
 
-      // Quest completed
-      if (data.questCompleted) {
+      // Only end conversation when user explicitly says farewell
+      if (data.farewell) {
         setConversationEnded(true);
       }
     } catch (error) {

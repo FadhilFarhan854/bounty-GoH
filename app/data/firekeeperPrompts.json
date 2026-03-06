@@ -95,7 +95,7 @@
       "id": "quest_complete",
       "label": "Quest Selesai",
       "keywords": ["selesai", "sudah", "berhasil", "upload", "bukti", "mengunggah", "completed", "done", "finished", "mengalahkan", "membunuh"],
-      "prompt": "User telah menyelesaikan quest dan mengupload bukti. Berikan respons EPIC:\n\n- Ucapkan terima kasih yang emosional.\n- Puji keberanian mereka.\n- Singgung bahwa takdir mereka semakin terang.\n\nContoh: 'Kau telah membuktikan dirimu, pengembara. Api ini berkedip lebih terang malam ini... karena kau.'\nTandai QUEST_COMPLETED di akhir.\nMaksimal 2-3 kalimat."
+      "prompt": "User telah menyelesaikan quest dan mengupload bukti. Berikan respons EPIC:\n\n- Ucapkan terima kasih yang emosional.\n- Puji keberanian mereka.\n- Singgung bahwa takdir mereka semakin terang.\n\nContoh: 'Kau telah membuktikan dirimu, pengembara. Api ini berkedip lebih terang malam ini... karena kau.'\nTandai QUEST_COMPLETED di akhir.\nMaksimal 2-3 kalimat. perlu diingat bahwa jika user menjawab dengan kata kata random, itu mungkin ign nya"
     },
     {
       "id": "general",

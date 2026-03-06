@@ -133,6 +133,13 @@ export default function FirekeeperPage() {
       return;
     }
 
+    // Validate file size (max 100MB for Cloudinary free plan)
+    const MAX_SIZE_MB = 100;
+    if (file.size > MAX_SIZE_MB * 1024 * 1024) {
+      alert(`Ukuran video terlalu besar (max ${MAX_SIZE_MB}MB). Ukuran file: ${(file.size / 1024 / 1024).toFixed(1)}MB`);
+      return;
+    }
+
     setIsUploading(true);
 
     try {
@@ -140,7 +147,7 @@ export default function FirekeeperPage() {
       const uploadMessage: ChatMessage = {
         id: `upload-${Date.now()}`,
         role: "system",
-        content: `Fate Maiden sedang membaca ingatan penyelesaian quest`,
+        content: `Mengunggah bukti quest (${(file.size / 1024 / 1024).toFixed(1)}MB)...`,
         timestamp: new Date(),
       };
       setMessages((prev) => [...prev, uploadMessage]);
@@ -154,7 +161,7 @@ export default function FirekeeperPage() {
       const signData = await signRes.json();
 
       if (!signRes.ok) {
-        throw new Error(signData.error || 'Failed to get upload signature');
+        throw new Error(signData.error || 'Gagal mendapatkan upload signature');
       }
 
       // Step 2: Upload directly from browser to Cloudinary
@@ -174,25 +181,29 @@ export default function FirekeeperPage() {
       const cloudData = await cloudRes.json();
 
       if (!cloudRes.ok) {
-        throw new Error(cloudData.error?.message || 'Cloudinary upload failed');
+        const errMsg = cloudData.error?.message || 'Cloudinary upload gagal';
+        console.error('Cloudinary error detail:', cloudData);
+        throw new Error(errMsg);
       }
 
       // Step 3: Submit to approval queue with Cloudinary URL
-      try {
-        await fetch("/api/firekeeper/submissions", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            playerName,
-            bossId: currentQuest.bossId,
-            bossName: currentQuest.bossName,
-            bounty: currentQuest.bounty,
-            videoFileName: file.name,
-            videoUrl: cloudData.secure_url,
-          }),
-        });
-      } catch (submitErr) {
-        console.error("Submission error:", submitErr);
+      const submitRes = await fetch("/api/firekeeper/submissions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          playerName,
+          bossId: currentQuest.bossId,
+          bossName: currentQuest.bossName,
+          bounty: currentQuest.bounty,
+          videoFileName: file.name,
+          videoUrl: cloudData.secure_url,
+        }),
+      });
+
+      if (!submitRes.ok) {
+        const submitData = await submitRes.json();
+        console.error("Submission save error:", submitData);
+        // Still continue — video is uploaded, just metadata save failed
       }
 
       // Update quest status
@@ -211,10 +222,11 @@ export default function FirekeeperPage() {
 
     } catch (error) {
       console.error('Upload error:', error);
+      const errDetail = error instanceof Error ? error.message : 'Unknown error';
       const errorMessage: ChatMessage = {
         id: `upload-error-${Date.now()}`,
         role: "system",
-        content: '❌ Gagal mengunggah video. Coba lagi.',
+        content: `❌ Gagal mengunggah video: ${errDetail}`,
         timestamp: new Date(),
       };
       setMessages((prev) => [...prev, errorMessage]);

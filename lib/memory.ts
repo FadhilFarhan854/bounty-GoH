@@ -48,12 +48,17 @@ export async function loadMemories(): Promise<MemoriesStore> {
     }
 
     const data = await response.json();
-    // Handle both formats: { users: {...} } or direct {...}
+    // Handle multiple formats robustly
     if (data && typeof data === "object") {
-      if (data.users && typeof data.users === "object") {
+      if (data.users && typeof data.users === "object" && !Array.isArray(data.users)) {
         return data as MemoriesStore;
       }
-      // If stored as flat object, wrap it
+      // If users is array [] or missing, return empty object
+      if (!data.users || Array.isArray(data.users)) {
+        console.warn("Npoint users is array or missing, treating as empty object");
+        return { users: {} };
+      }
+      // If stored as flat object (no users wrapper), wrap it
       return { users: data };
     }
     return { users: {} };

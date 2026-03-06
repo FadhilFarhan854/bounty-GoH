@@ -21,7 +21,15 @@ Npoint adalah layanan JSON storage gratis yang memungkinkan kita menyimpan dan m
 5. Copy URL yang diberikan (contoh: `https://api.npoint.io/xyz789uvw012`)
 6. Paste ke `.env.local` sebagai `GALLERY_JSON_URL`
 
-### 3. Buat Npoint untuk Firekeeper Memories
+### 3. Buat Npoint untuk Quest Submissions
+1. Kunjungi https://www.npoint.io/ lagi
+2. Klik "New Document"
+3. Isi dengan array kosong: `[]`
+4. Klik "Create"
+5. Copy URL yang diberikan (contoh: `https://api.npoint.io/sub456xyz789`)
+6. Paste ke `.env.local` sebagai `QUEST_SUBMISSIONS_JSON_URL`
+
+### 4. Buat Npoint untuk Firekeeper Memories
 1. Kunjungi https://www.npoint.io/ lagi
 2. Klik "New Document"
 3. Isi dengan object: `{"users":{}}`
@@ -29,7 +37,7 @@ Npoint adalah layanan JSON storage gratis yang memungkinkan kita menyimpan dan m
 5. Copy URL yang diberikan (contoh: `https://api.npoint.io/mem123abc456`)
 6. Paste ke `.env.local` sebagai `MEMORIES_JSON_URL`
 
-### 4. Setup .env.local
+### 5. Setup .env.local
 Buat file `.env.local` di root project dengan isi:
 
 ```bash
@@ -38,6 +46,9 @@ JSON_STORAGE_URL=https://api.npoint.io/abc123def456
 
 # Gallery System
 GALLERY_JSON_URL=https://api.npoint.io/xyz789uvw012
+
+# Quest Submissions
+QUEST_SUBMISSIONS_JSON_URL=https://api.npoint.io/sub456xyz789
 
 # Firekeeper Memories (RAG)
 MEMORIES_JSON_URL=https://api.npoint.io/mem123abc456
@@ -67,6 +78,12 @@ NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET=your-upload-preset
 - Gallery list dibaca dari npoint
 - Ketika delete, file dihapus dari Cloudinary dan metadata dihapus dari npoint
 
+### Quest Submissions
+- User upload video bukti quest ke Cloudinary (max 100MB)
+- Metadata submission disimpan ke npoint (QUEST_SUBMISSIONS_JSON_URL)
+- Admin bisa approve/reject submission dari halaman admin
+- PENTING: Tanpa QUEST_SUBMISSIONS_JSON_URL, submission TIDAK akan tersimpan di Vercel (read-only filesystem)
+
 ### Firekeeper Memories (RAG)
 - Fate Maiden mengingat semua pengembara yang pernah berkunjung
 - Memory disimpan ke npoint (MEMORIES_JSON_URL) dengan format `{"users": {...}}`
@@ -78,7 +95,8 @@ NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET=your-upload-preset
 2. Test Invoke Fate - cek data tersimpan di npoint
 3. Test upload gallery - cek metadata tersimpan di npoint
 4. Test Firekeeper chat - cek memory tersimpan di npoint setelah percakapan
-5. Refresh halaman - data harus tetap ada
+5. Test upload bukti quest - cek submission tersimpan di npoint
+6. Refresh halaman - data harus tetap ada
 
 ## Troubleshooting
 

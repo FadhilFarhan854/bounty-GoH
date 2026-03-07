@@ -20,8 +20,42 @@ export interface UserMemory {
   recentContext: string;
 }
 
+// ─── World Knowledge (info yang Maiden pelajari dari adventurer) ────
+
+export interface WorldKnowledge {
+  /** Unique topic key, e.g. "drop_goblin_king", "dungeon_west_tip" */
+  topic: string;
+  /** The actual information content */
+  content: string;
+  /** Who shared this info */
+  learnedFrom: string;
+  /** ISO timestamp when learned */
+  learnedAt: string;
+  /** Category for filtering */
+  category: "boss_drop" | "dungeon_tip" | "item_info" | "npc_info" | "general";
+  /** Searchable keywords for relevance matching */
+  tags: string[];
+}
+
+// ─── Mailbox (titip pesan antar adventurer) ─────────────────────────
+
+export interface MailMessage {
+  id: string;
+  from: string;
+  to: string;
+  message: string;
+  sentAt: string;
+  read: boolean;
+}
+
+// ─── Store ──────────────────────────────────────────────────────────
+
 interface MemoriesStore {
   users: Record<string, UserMemory>;
+  /** Global knowledge Maiden has learned from all adventurers */
+  worldKnowledge: Record<string, WorldKnowledge>;
+  /** Mailbox per recipient name (lowercase key) */
+  mailbox: Record<string, MailMessage[]>;
 }
 
 // ─── Npoint Configuration ───────────────────────────────────────────
@@ -30,11 +64,13 @@ const MEMORIES_JSON_URL = process.env.MEMORIES_JSON_URL;
 
 // ─── Read / Write (async, npoint-based) ─────────────────────────────
 
+const EMPTY_STORE: MemoriesStore = { users: {}, worldKnowledge: {}, mailbox: {} };
+
 export async function loadMemories(): Promise<MemoriesStore> {
   try {
     if (!MEMORIES_JSON_URL) {
       console.warn("MEMORIES_JSON_URL not set, returning empty store");
-      return { users: {} };
+      return { ...EMPTY_STORE };
     }
 
     const response = await fetch(MEMORIES_JSON_URL, {
@@ -44,27 +80,30 @@ export async function loadMemories(): Promise<MemoriesStore> {
 
     if (!response.ok) {
       console.error("Npoint fetch failed:", response.status, response.statusText);
-      return { users: {} };
+      return { ...EMPTY_STORE };
     }
 
     const data = await response.json();
     // Handle multiple formats robustly
     if (data && typeof data === "object") {
-      if (data.users && typeof data.users === "object" && !Array.isArray(data.users)) {
-        return data as MemoriesStore;
-      }
-      // If users is array [] or missing, return empty object
-      if (!data.users || Array.isArray(data.users)) {
-        console.warn("Npoint users is array or missing, treating as empty object");
-        return { users: {} };
-      }
-      // If stored as flat object (no users wrapper), wrap it
-      return { users: data };
+      const users =
+        data.users && typeof data.users === "object" && !Array.isArray(data.users)
+          ? data.users
+          : {};
+      const worldKnowledge =
+        data.worldKnowledge && typeof data.worldKnowledge === "object" && !Array.isArray(data.worldKnowledge)
+          ? data.worldKnowledge
+          : {};
+      const mailbox =
+        data.mailbox && typeof data.mailbox === "object" && !Array.isArray(data.mailbox)
+          ? data.mailbox
+          : {};
+      return { users, worldKnowledge, mailbox };
     }
-    return { users: {} };
+    return { ...EMPTY_STORE };
   } catch (err) {
     console.error("Error loading memories from npoint:", err);
-    return { users: {} };
+    return { ...EMPTY_STORE };
   }
 }
 
@@ -211,4 +250,156 @@ export async function findMentionedUser(
 export async function getAllUserNames(): Promise<string[]> {
   const store = await loadMemories();
   return Object.values(store.users).map((u) => u.name);
+}
+
+// ─── World Knowledge CRUD ───────────────────────────────────────────
+
+/**
+ * Save a piece of world knowledge the Maiden learned from an adventurer.
+ * If a topic with the same key already exists, it gets updated (latest info wins).
+ */
+export async function saveWorldKnowledge(
+  knowledge: Omit<WorldKnowledge, "learnedAt">
+): Promise<WorldKnowledge> {
+  const store = await loadMemories();
+  const entry: WorldKnowledge = {
+    ...knowledge,
+    learnedAt: new Date().toISOString(),
+  };
+  store.worldKnowledge[knowledge.topic] = entry;
+  await saveMemories(store);
+  return entry;
+}
+
+/**
+ * Search world knowledge for entries relevant to the user's message.
+ * Uses keyword matching against tags, topic keys, and content.
+ * Returns only relevant entries (max 5) to keep prompt tokens low.
+ */
+export async function searchWorldKnowledge(
+  userMessage: string
+): Promise<WorldKnowledge[]> {
+  const store = await loadMemories();
+  const msg = userMessage.toLowerCase();
+  const allEntries = Object.values(store.worldKnowledge);
+
+  if (allEntries.length === 0) return [];
+
+  // Score each entry by relevance
+  const scored = allEntries.map((entry) => {
+    let score = 0;
+
+    // Match topic key (e.g. "goblin_king" → "goblin king")
+    const topicWords = entry.topic.replace(/_/g, " ").toLowerCase();
+    if (msg.includes(topicWords)) score += 3;
+
+    // Match individual tags
+    for (const tag of entry.tags) {
+      if (msg.includes(tag.toLowerCase())) score += 2;
+    }
+
+    // Match words in content (partial)
+    const contentWords = entry.content.toLowerCase().split(/\s+/);
+    for (const word of contentWords) {
+      if (word.length > 3 && msg.includes(word)) score += 0.5;
+    }
+
+    return { entry, score };
+  });
+
+  // Return only entries with score > 0, sorted by relevance, capped at 5
+  return scored
+    .filter((s) => s.score > 0)
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 5)
+    .map((s) => s.entry);
+}
+
+/**
+ * Get ALL world knowledge (for admin/debug purposes only, not for prompts).
+ */
+export async function getAllWorldKnowledge(): Promise<WorldKnowledge[]> {
+  const store = await loadMemories();
+  return Object.values(store.worldKnowledge);
+}
+
+/**
+ * Remove a world knowledge entry by topic key.
+ */
+export async function removeWorldKnowledge(topic: string): Promise<boolean> {
+  const store = await loadMemories();
+  if (!store.worldKnowledge[topic]) return false;
+  delete store.worldKnowledge[topic];
+  await saveMemories(store);
+  return true;
+}
+
+// ─── Mailbox CRUD ───────────────────────────────────────────────────
+
+/**
+ * Send a mail message from one adventurer to another.
+ * The Maiden acts as the messenger.
+ */
+export async function sendMail(
+  from: string,
+  to: string,
+  message: string
+): Promise<MailMessage> {
+  const store = await loadMemories();
+  const toKey = to.toLowerCase().trim();
+
+  const mail: MailMessage = {
+    id: `${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+    from,
+    to,
+    message,
+    sentAt: new Date().toISOString(),
+    read: false,
+  };
+
+  if (!store.mailbox[toKey]) {
+    store.mailbox[toKey] = [];
+  }
+  store.mailbox[toKey].push(mail);
+
+  await saveMemories(store);
+  return mail;
+}
+
+/**
+ * Get all unread messages for a user.
+ */
+export async function getUnreadMail(name: string): Promise<MailMessage[]> {
+  const store = await loadMemories();
+  const key = name.toLowerCase().trim();
+  const mails = store.mailbox[key] ?? [];
+  return mails.filter((m) => !m.read);
+}
+
+/**
+ * Mark all messages for a user as read.
+ * Call this after the Maiden has delivered the messages.
+ */
+export async function markMailAsRead(name: string): Promise<void> {
+  const store = await loadMemories();
+  const key = name.toLowerCase().trim();
+  const mails = store.mailbox[key];
+  if (!mails || mails.length === 0) return;
+
+  for (const m of mails) {
+    m.read = true;
+  }
+
+  await saveMemories(store);
+}
+
+/**
+ * Get all mail for a user (read + unread), sorted newest first.
+ */
+export async function getAllMail(name: string): Promise<MailMessage[]> {
+  const store = await loadMemories();
+  const key = name.toLowerCase().trim();
+  return (store.mailbox[key] ?? []).sort(
+    (a, b) => new Date(b.sentAt).getTime() - new Date(a.sentAt).getTime()
+  );
 }

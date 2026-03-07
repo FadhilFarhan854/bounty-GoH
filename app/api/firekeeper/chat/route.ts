@@ -7,14 +7,20 @@ import {
   classifyContext,
   retrieveLore,
   type RetrievedContext,
-  type Topic,
 } from "@/lib/knowledge";
 import {
   getUserMemory,
   upsertUserMemory,
   findMentionedUser,
   capSummary,
+  searchWorldKnowledge,
+  saveWorldKnowledge,
+  getUnreadMail,
+  markMailAsRead,
+  sendMail,
   type UserMemory,
+  type WorldKnowledge,
+  type MailMessage,
 } from "@/lib/memory";
 
 const openai = new OpenAI({
@@ -33,8 +39,10 @@ function buildSystemPrompt(opts: {
   mentionedUser: UserMemory | null;
   boss: (typeof bosses)[number] | null;
   currentQuest: any;
+  relevantKnowledge: WorldKnowledge[];
+  unreadMail: MailMessage[];
 }): string {
-  const { retrieved, userMemory, mentionedUser, boss, currentQuest } = opts;
+  const { retrieved, userMemory, mentionedUser, boss, currentQuest, relevantKnowledge, unreadMail } = opts;
   const knowledge = getKnowledge();
   const { topic, currentDepth, previousLore, currentLore } = retrieved;
 
@@ -118,6 +126,24 @@ function buildSystemPrompt(opts: {
     prompt += `HANYA bicarakan boss ini saat membahas quest. JANGAN tawarkan quest jika user belum memperkenalkan diri.\n\n`;
   }
 
+  // ── Inject relevant world knowledge (from past adventurer interactions)
+  if (relevantKnowledge.length > 0) {
+    prompt += `📖 PENGETAHUAN YANG KAU INGAT (info dari para pengembara sebelumnya — gunakan jika relevan):\n`;
+    for (const k of relevantKnowledge) {
+      prompt += `- [${k.category}] ${k.content} (dipelajari dari: ${k.learnedFrom})\n`;
+    }
+    prompt += `Jika user bertanya tentang topik terkait, bagikan info ini secara natural seolah kamu mengingatnya. Sebut sumber jika perlu ("Seorang pengembara bernama X pernah bercerita...").\n\n`;
+  }
+
+  // ── Inject unread mail for this user
+  if (unreadMail.length > 0) {
+    prompt += `📬 ADA TITIPAN PESAN UNTUK PENGEMBARA INI:\n`;
+    for (const m of unreadMail) {
+      prompt += `- Dari "${m.from}": "${m.message}" (dititipkan ${new Date(m.sentAt).toLocaleDateString("id-ID")})\n`;
+    }
+    prompt += `Sampaikan pesan-pesan ini secara natural di awal percakapan, seperti: "Oh, sebelum kita bicara lebih lanjut... ada yang menitipkan pesan untukmu." Lalu bacakan isi pesan dalam gayamu.\n\n`;
+  }
+
   // ── Emotional awareness
   prompt += `EMPATI & KEPEKAAN:
 - Perhatikan kondisi emosional pengembara dari cara bicaranya.
@@ -135,8 +161,20 @@ function buildSystemPrompt(opts: {
 
   // ── Memory update instruction (parsed server-side, hidden from user)
   prompt += `PENTING — WAJIB tambahkan blok berikut di akhir SETIAP respons (tidak ditampilkan ke user):
-|||MEMORY|||{"summary":"ringkasan 1 kalimat singkat tentang interaksi ini dalam bahasa Indonesia","detected_name":"nama pengembara jika terdeteksi dalam pesan user, atau null","trait":"sifat/karakter pengembara yang terdeteksi dari cara bicaranya (pilih 1-2 kata: ceria, kasar, lucu, tegas, serius, pendiam, ramah, pemarah, bijak, penakut, pemberani, dll) atau null jika belum terdeteksi"}|||END_MEMORY|||
-Contoh: |||MEMORY|||{"summary":"Frentzie bertanya tentang guild dengan antusias.","detected_name":"Frentzie","trait":"ceria"}|||END_MEMORY|||
+|||MEMORY|||{"summary":"ringkasan 1 kalimat singkat tentang interaksi ini","detected_name":"nama pengembara jika terdeteksi, atau null","trait":"sifat pengembara (ceria/kasar/lucu/tegas/serius/pendiam/ramah/pemarah/bijak/penakut/pemberani) atau null","new_knowledge":null atau {"topic":"key_unik","content":"isi info","category":"boss_drop|dungeon_tip|item_info|npc_info|general","tags":["keyword1","keyword2"]},"mail_to":null atau {"to":"nama_penerima","message":"isi pesan"}}|||END_MEMORY|||
+
+ATURAN KNOWLEDGE:
+- Jika user MEMBERIKAN informasi baru tentang dunia (drop boss, tip dungeon, info item, info NPC), ISI field new_knowledge.
+- Contoh: user bilang "Goblin King drop Golden Crown" → new_knowledge: {"topic":"drop_goblin_king","content":"Goblin King bisa drop Golden Crown","category":"boss_drop","tags":["goblin king","drop","golden crown"]}
+- Jika TIDAK ada info baru, set new_knowledge: null
+
+ATURAN MAIL:
+- Jika user minta TITIP PESAN ke pengembara lain, ISI field mail_to.
+- Contoh: user bilang "titip pesan ke Frentzie: jangan lupa beli potion" → mail_to: {"to":"Frentzie","message":"jangan lupa beli potion"}
+- Jika TIDAK ada pesan titipan, set mail_to: null
+
+Contoh lengkap:
+|||MEMORY|||{"summary":"Farhan berbagi info drop Goblin King.","detected_name":"Farhan","trait":"ceria","new_knowledge":{"topic":"drop_goblin_king","content":"Goblin King bisa drop Golden Crown dan Rare Sword","category":"boss_drop","tags":["goblin king","drop","golden crown","rare sword"]},"mail_to":null}|||END_MEMORY|||
 SELALU sertakan blok ini.`;
 
   return prompt;
@@ -148,6 +186,16 @@ interface MemoryUpdate {
   summary: string;
   detected_name: string | null;
   trait: string | null;
+  new_knowledge: {
+    topic: string;
+    content: string;
+    category: "boss_drop" | "dungeon_tip" | "item_info" | "npc_info" | "general";
+    tags: string[];
+  } | null;
+  mail_to: {
+    to: string;
+    message: string;
+  } | null;
 }
 
 function parseResponse(raw: string) {
@@ -160,7 +208,7 @@ function parseResponse(raw: string) {
     try {
       memoryUpdate = JSON.parse(memMatch[1].trim());
     } catch {
-      memoryUpdate = { summary: "Percakapan berlangsung.", detected_name: null, trait: null };
+      memoryUpdate = { summary: "Percakapan berlangsung.", detected_name: null, trait: null, new_knowledge: null, mail_to: null };
     }
   }
 
@@ -240,6 +288,14 @@ export async function POST(request: NextRequest) {
     // ── 6. Check for cross-user mention ("kau kenal Frentzie?")
     const mentionedUser = await findMentionedUser(userText, playerName);
 
+    // ── 6b. Search relevant world knowledge (only entries matching user message)
+    const relevantKnowledge = await searchWorldKnowledge(userText);
+
+    // ── 6c. Check mailbox for unread messages (only if user is known)
+    const unreadMail: MailMessage[] = isKnown
+      ? await getUnreadMail(playerName)
+      : [];
+
     // ── 7. Build enhanced system prompt
     const systemPrompt = buildSystemPrompt({
       retrieved,
@@ -247,6 +303,8 @@ export async function POST(request: NextRequest) {
       mentionedUser,
       boss: selectedBoss,
       currentQuest,
+      relevantKnowledge,
+      unreadMail,
     });
 
     // ── 8. Call LLM
@@ -340,6 +398,32 @@ export async function POST(request: NextRequest) {
         summary,
         recentContext: topic.id,
       });
+
+      // ── 11b. Save new world knowledge (if AI detected useful info)
+      if (memoryUpdate?.new_knowledge) {
+        const k = memoryUpdate.new_knowledge;
+        await saveWorldKnowledge({
+          topic: k.topic,
+          content: k.content,
+          learnedFrom: effectiveName!,
+          category: k.category,
+          tags: k.tags,
+        });
+        console.log(`World knowledge saved: ${k.topic} (from ${effectiveName})`);
+      }
+
+      // ── 11c. Send mail (if user asked to leave a message for someone)
+      if (memoryUpdate?.mail_to) {
+        const m = memoryUpdate.mail_to;
+        await sendMail(effectiveName!, m.to, m.message);
+        console.log(`Mail sent from ${effectiveName} to ${m.to}`);
+      }
+
+      // ── 11d. Mark delivered mails as read
+      if (unreadMail.length > 0 && isKnown) {
+        await markMailAsRead(playerName);
+        console.log(`Marked ${unreadMail.length} mail(s) as read for ${playerName}`);
+      }
     }
 
     // ── 12. Build quest object for frontend
